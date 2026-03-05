@@ -28,7 +28,7 @@ async def get_role(session: SessionDep, role_id: str, currentUser = Depends(getA
 
 ## CREATE A ROLE
 @router.post("", response_model=DTO.CreateRoleResponse, status_code=201)
-async def create_role(role: DTO.CreateRoleRequest, session: SessionDep):
+async def create_role(role: DTO.CreateRoleRequest, session: SessionDep, currentUser = Depends(getAdmin)):
 
     # Check if the role already exists.
     existingRecord = session.exec(select(Roles).where(Roles.name == role.name)).first()
@@ -49,7 +49,7 @@ async def create_role(role: DTO.CreateRoleRequest, session: SessionDep):
 
 ## UPDATE ROLE BY ID
 @router.put("/{role_id}", response_model=DTO.UpdateRoleResponse, status_code=200)
-async def update_role(role_id: str, role: DTO.UpdateRoleRequest, session: SessionDep):
+async def update_role(role_id: str, role: DTO.UpdateRoleRequest, session: SessionDep, currentUser = Depends(getAdmin)):
     foundRole = session.get(Roles, role_id)
 
     if not foundRole:
@@ -69,7 +69,7 @@ async def update_role(role_id: str, role: DTO.UpdateRoleRequest, session: Sessio
 
 ## DELETE ROLE BY ID
 @router.delete("/{role_id}", status_code=204)
-async def delete_role(role_id: str, session: SessionDep):
+async def delete_role(role_id: str, session: SessionDep, currentUser = Depends(getAdmin)):
     role = session.get(Roles, role_id)
     if not role:
         raise HTTPException(

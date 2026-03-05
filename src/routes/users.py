@@ -5,22 +5,22 @@ from typing import Annotated
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from scripts.database import SessionDep
-from scripts.auth import getUser, getCurrentUser, getPasswordHash
+from scripts.auth import getUser, getCurrentUser, getPasswordHash, getAdmin
 
 
-router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(getCurrentUser)])
+router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("")
-async def get_users():
+async def get_users(user = Depends(getCurrentUser)):
     return {"message": "List of users"}
 
 @router.get("/{user_id}")
-async def get_user(user_id: str):
+async def get_user(user_id: str, user = Depends(getCurrentUser)):
     return {"message": f"User with ID {user_id}"}
 
 # Note: The create_user enpoint does not exist, because of the authentication system. Users are created through the /auth/register endpoint.
 @router.post("", response_model=DTO.createUserResponse)
-async def register(formData: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep):
+async def register(formData: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep, user = Depends(getAdmin)):
     existingUser = getUser(formData.username, session)
     if existingUser:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with that username already exists")
@@ -40,9 +40,9 @@ async def register(formData: Annotated[OAuth2PasswordRequestForm, Depends()], se
     return userItem
 
 @router.put("/{user_id}")
-async def update_user(user_id: str):
+async def update_user(user_id: str, user = Depends(getAdmin)):
     return {"message": f"User with ID {user_id} updated"}
 
 @router.delete("/{user_id}")
-async def delete_user(user_id: str):
+async def delete_user(user_id: str, user = Depends(getAdmin)):
     return {"message": f"User with ID {user_id} deleted"}
