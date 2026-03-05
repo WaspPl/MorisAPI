@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 import models.DTOS.rolesDTOS as DTO
-from scripts.database import get_session, SessionDep
+from scripts.database import SessionDep
 from models.databaseModels import Roles
 from sqlmodel import select
-
+from scripts.auth import getCurrentUser
+from typing import Annotated
+from models.databaseModels import Users
 
 router = APIRouter(prefix="/roles", tags=["roles"])
 
 ## GET ROLES
 @router.get("", response_model=list[DTO.GetRoleResponse])
-async def get_roles(session: SessionDep, offset: int = 0, limit: int = 100):
+async def get_roles(session: SessionDep,current_user: Annotated[Users, Depends(getCurrentUser)], offset: int = 0, limit: int = 100):
     roles = session.exec(select(Roles).offset(offset).limit(limit)).all()
     return roles
 

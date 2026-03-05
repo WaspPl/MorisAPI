@@ -64,7 +64,7 @@ def createAccessToken(data: dict, expiresDelta: timedelta | None = None):
     encodedJWT = jwt.encode(dataToEncode, secretKey, algorithm=algorithm)
     return encodedJWT
 
-def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)]):
+def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
     credentailsException = HTTPException(
         status_code=401,
         detail="Unauthorized",
@@ -78,7 +78,7 @@ def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)]):
         tokenData = TokenData(username = username)
     except InvalidTokenError:
         raise credentailsException
-    user = getUser(username= tokenData.username)
+    user = getUser(username= tokenData.username, session = session)
     if user is None:
         raise credentailsException
     return user
