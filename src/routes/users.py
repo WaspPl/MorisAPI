@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from scripts.database import get_session
 from models.databaseModels import Users
 import models.DTOS.usersDTOS as DTO
 from typing import Annotated
@@ -9,7 +8,7 @@ from scripts.database import SessionDep
 from scripts.auth import getUser, getCurrentUser, getPasswordHash
 
 
-router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(get_session)])
+router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(getCurrentUser)])
 
 @router.get("")
 async def get_users():

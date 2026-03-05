@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from scripts.auth import getCurrentUser
 
-router = APIRouter(prefix="/prompts", tags=["prompts"])
+router = APIRouter(prefix="/prompts", tags=["prompts"], dependencies= [Depends(getCurrentUser)],)
 
 @router.get("")
 async def get_prompts():

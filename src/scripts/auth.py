@@ -81,6 +81,17 @@ def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: Sessio
     user = getUser(username= tokenData.username, session = session)
     if user is None:
         raise credentailsException
+    print(user, flush=True)
     return user
 
 
+def getAdmin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
+    user = getCurrentUser(token, session)
+    if user.roleId == 1:
+        return user
+    
+    raise HTTPException(
+    status_code=401,
+    detail="Unauthorized",
+    headers={"WWW-Authenticate": "Bearer"},
+    )

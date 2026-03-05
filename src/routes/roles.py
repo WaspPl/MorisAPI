@@ -3,21 +3,21 @@ import models.DTOS.rolesDTOS as DTO
 from scripts.database import SessionDep
 from models.databaseModels import Roles
 from sqlmodel import select
-from scripts.auth import getCurrentUser
+from scripts.auth import getCurrentUser, getAdmin
 from typing import Annotated
 from models.databaseModels import Users
 
-router = APIRouter(prefix="/roles", tags=["roles"])
+router = APIRouter(prefix="/roles", tags=["roles"],)
 
 ## GET ROLES
 @router.get("", response_model=list[DTO.GetRoleResponse])
-async def get_roles(session: SessionDep,current_user: Annotated[Users, Depends(getCurrentUser)], offset: int = 0, limit: int = 100):
+async def get_roles(session: SessionDep, offset: int = 0, limit: int = 100, currentUser = Depends(getCurrentUser)):
     roles = session.exec(select(Roles).offset(offset).limit(limit)).all()
     return roles
 
 ## GET ROLE BY ID
 @router.get("/{role_id}", response_model=DTO.GetRoleResponse)
-async def get_role(session: SessionDep, role_id: str):
+async def get_role(session: SessionDep, role_id: str, currentUser = Depends(getAdmin)):
     role = session.get(Roles, role_id)
     if not role:
         raise HTTPException(
