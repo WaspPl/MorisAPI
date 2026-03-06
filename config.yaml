@@ -6,3 +6,4 @@ auth:
   secret_key: changeThisToYourKey
   algorithm: "HS256"
   token_expire_minutes: 30
+  default_admin_password: "admin"

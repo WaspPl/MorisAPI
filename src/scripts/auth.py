@@ -81,7 +81,6 @@ def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: Sessio
     user = getUser(username= tokenData.username, session = session)
     if user is None:
         raise credentailsException
-    print(user, flush=True)
     return user
 
 

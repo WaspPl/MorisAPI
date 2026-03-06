@@ -1,18 +1,27 @@
 from fastapi import APIRouter, Depends
-from models.databaseModels import Users
+from models.databaseModels import Users, Roles
 import models.DTOS.usersDTOS as DTO
 from typing import Annotated
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from scripts.database import SessionDep
 from scripts.auth import getUser, getCurrentUser, getPasswordHash, getAdmin
+from sqlmodel import select
 
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.get("")
-async def get_users(user = Depends(getCurrentUser)):
-    return {"message": "List of users"}
+@router.get("", response_model=list[DTO.getUserResponse])
+async def get_users(session: SessionDep, user = Depends(getCurrentUser)):
+    statement = select(Users,Roles).where(Users.roleId==Roles.id)
+    result = session.exec(statement)
+    
+    response = []
+    for user, role in result:
+        response.append(DTO.getUserResponse(id=user.id,username=user.username, roleName= role.name))
+    
+
+    return response
 
 @router.get("/{user_id}")
 async def get_user(user_id: str, user = Depends(getCurrentUser)):
