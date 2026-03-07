@@ -35,12 +35,12 @@ def populate_tables(session: Session):
         session.add(Role(id=2,name="user"))
         session.commit()
     if not session.exec(select(User)).first():
-        session.add(User(id=1, username="admin", hashed_password=getPasswordHash(settings.auth.default_admin_password), roleId=1))
+        session.add(User(id=1, username="admin", password=getPasswordHash(settings.auth.default_admin_password), roleId=1))
         session.commit()
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
-    
+
     with Session(engine) as session:
         populate_tables(session)
 
@@ -82,7 +82,7 @@ def enforceUnique(tableModel,tableVariable, newVariable, session: SessionDep):
     return
 
 def protectAdminCount(session: SessionDep):
-    admin_count = session.exec(select(func.count(User.id)).where(User.roleId == 1)).one()
+    admin_count = session.exec(select(func.count(User.id)).where(User.role_id == 1)).one()
     if admin_count <= 1:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

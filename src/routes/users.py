@@ -13,10 +13,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=list[DTO.getUserResponse])
 async def get_users(session: SessionDep, currentUser = Depends(getCurrentUser)):
-    result = session.exec(select(User,Role).where(User.roleId==Role.id))
+    result = session.exec(select(User,Role).where(User.role_id==Role.id))
     response = []
     for user, role in result:
-        response.append(DTO.getUserResponse(id=user.id,username=user.username, roleName= role.name))
+        response.append(DTO.getUserResponse(id=user.id,username=user.username, role_name= role.name))
     return response
 
 @router.get("/{user_id}", response_model=DTO.getUserDetailsResponse)
@@ -24,7 +24,6 @@ async def get_user(user_id: str,session: SessionDep, currentUser = Depends(getCu
     userItem = enforceExisting(User, user_id, session)
     return userItem
     
-# Note: The create_user enpoint does not exist, because of the authentication system. User are created through the /auth/register endpoint.
 @router.post("", response_model=DTO.createUserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep, user = Depends(getAdmin)):
     enforceUnique(User, User.username, formData.username, session)
@@ -33,8 +32,8 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username and password are required")
     
     userModel = User(username=formData.username, 
-                     hashed_password=getPasswordHash(formData.password), 
-                     roleId = 2)
+                     password=getPasswordHash(formData.password), 
+                     role_id = 2)
 
     userItem = User.model_validate(userModel)
     session.add(userItem)
@@ -46,15 +45,12 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
 async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , currentUser = Depends(getAdmin)):
     foundUser = enforceExisting(User, user_id, session)
-    if user.roleId != 1 and foundUser.roleId == 1:
+    if user.role_id != 1 and foundUser.role_id == 1:
         protectAdminCount(session)
     
-    role = enforceExisting(Role, user.roleId, session)
+    role = enforceExisting(Role, user.role_id, session)
     userData = user.model_dump(exclude_unset=True)
 
-    if user.password:
-        userData["hashed_password"] = getPasswordHash(user.password)
-        
     foundUser.sqlmodel_update(userData)
 
     session.add(foundUser)
@@ -67,7 +63,7 @@ async def update_user(user_id: str, user: DTO.updateUserRequest, session: Sessio
 async def delete_user(user_id: int, session: SessionDep, currentUser = Depends(getAdmin)):
     
     user = enforceExisting(User, user_id)
-    if user.roleId == 1:
+    if user.role_id == 1:
         protectAdminCount(session)
 
     session.delete(user)

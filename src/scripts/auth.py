@@ -50,7 +50,7 @@ def authenticateUser(username: str, password: str, session: SessionDep):
     if not user:
         verifyPassword(password, dummyHash)
         return False
-    if not verifyPassword(password, user.hashed_password):
+    if not verifyPassword(password, user.password):
         return False
     return user
 
