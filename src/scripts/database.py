@@ -1,6 +1,6 @@
 from sqlmodel import create_engine, Session, SQLModel, select, func
 from fastapi import Depends, HTTPException, status
-from typing import Annotated
+from typing import Annotated, TypeVar, Type
 from models.databaseModels import User, Role
 from scripts.configToObject import loadSettings
 from sqlalchemy import event, text
@@ -59,7 +59,10 @@ def create_db_and_tables():
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
-def enforceExisting(tableModel, id: int, session: SessionDep):
+
+T = TypeVar("T", bound=SQLModel)
+
+def enforceExisting(tableModel: Type[T], id: int, session: SessionDep) -> T:
     item = session.get(tableModel, id)
     if not item:
         modelName = tableModel.__name__
@@ -68,7 +71,7 @@ def enforceExisting(tableModel, id: int, session: SessionDep):
             detail=f"{modelName} with ID of {id} could not be found")
     return item
 
-def enforceUnique(tableModel,tableVariable, newVariable, session: SessionDep):
+def enforceUnique(tableModel: Type[T],tableVariable, newVariable, session: SessionDep) -> None:
     existingItem = session.exec(select(tableModel).where(tableVariable == newVariable)).first()
 
     if existingItem:
@@ -81,7 +84,7 @@ def enforceUnique(tableModel,tableVariable, newVariable, session: SessionDep):
         )
     return
 
-def protectAdminCount(session: SessionDep):
+def protectAdminCount(session: SessionDep) -> None:
     admin_count = session.exec(select(func.count(User.id)).where(User.role_id == 1)).one()
     if admin_count <= 1:
         raise HTTPException(
@@ -90,7 +93,7 @@ def protectAdminCount(session: SessionDep):
         )
     return
 
-def protectCoreRoles(role_id: int):
+def protectCoreRoles(role_id: int) -> None:
     if role_id in [1,2]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
