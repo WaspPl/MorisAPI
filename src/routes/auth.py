@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from fastapi import Depends
 from scripts.database import SessionDep
-from models.databaseModels import Users
+from models.databaseModels import User
 
 router = APIRouter(prefix="/token", tags=["auth"])
 

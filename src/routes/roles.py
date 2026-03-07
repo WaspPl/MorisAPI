@@ -1,29 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException
-import models.DTOS.rolesDTOS as DTO
-from scripts.database import SessionDep
-from models.databaseModels import Roles
+from fastapi import APIRouter, Depends, HTTPException, status
+import models.DTOS.roleDTOS as DTO
+from scripts.database import SessionDep, protectCoreRoles, enforceUnique, enforceExisting
+from models.databaseModels import Role
 from sqlmodel import select
 from scripts.auth import getCurrentUser, getAdmin
 from typing import Annotated
-from models.databaseModels import Users
+from models.databaseModels import User
 
-router = APIRouter(prefix="/roles", tags=["roles"],)
+router = APIRouter(prefix="/Role", tags=["Role"],)
 
-## GET ROLES
+## GET Role
 @router.get("", response_model=list[DTO.GetRoleResponse])
-async def get_roles(session: SessionDep, offset: int = 0, limit: int = 100, currentUser = Depends(getCurrentUser)):
-    roles = session.exec(select(Roles).offset(offset).limit(limit)).all()
-    return roles
+async def get_Role(session: SessionDep, offset: int = 0, limit: int = 100, currentUser = Depends(getCurrentUser)):
+    Role = session.exec(select(Role).offset(offset).limit(limit)).all()
+    return Role
 
 ## GET ROLE BY ID
 @router.get("/{role_id}", response_model=DTO.GetRoleResponse)
-async def get_role(session: SessionDep, role_id: str, currentUser = Depends(getAdmin)):
-    role = session.get(Roles, role_id)
-    if not role:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"A role with an id of '{role_id}' does not exist"
-            )
+async def get_role(session: SessionDep, role_id: int, currentUser = Depends(getAdmin)):
+    role = enforceExisting(Role, role_id, session)
     return role
 
 ## CREATE A ROLE
@@ -31,15 +26,9 @@ async def get_role(session: SessionDep, role_id: str, currentUser = Depends(getA
 async def create_role(role: DTO.CreateRoleRequest, session: SessionDep, currentUser = Depends(getAdmin)):
 
     # Check if the role already exists.
-    existingRecord = session.exec(select(Roles).where(Roles.name == role.name)).first()
-    if existingRecord:
-        raise HTTPException(
-            status_code=400,
-            detail=f"A role with the name of '{role.name}' already exists"
-            )
-    
+    enforceUnique(Role, Role.name, role.name, session)
     # Add the role to the DB.
-    roleItem = Roles.model_validate(role)
+    roleItem = Role.model_validate(role)
     session.add(roleItem)
     session.commit()
     session.refresh(roleItem)
@@ -49,14 +38,12 @@ async def create_role(role: DTO.CreateRoleRequest, session: SessionDep, currentU
 
 ## UPDATE ROLE BY ID
 @router.put("/{role_id}", response_model=DTO.UpdateRoleResponse, status_code=200)
-async def update_role(role_id: str, role: DTO.UpdateRoleRequest, session: SessionDep, currentUser = Depends(getAdmin)):
-    foundRole = session.get(Roles, role_id)
+async def update_role(role_id: int, role: DTO.UpdateRoleRequest, session: SessionDep, currentUser = Depends(getAdmin)):
+    
+    protectCoreRoles(role_id)
 
-    if not foundRole:
-        raise HTTPException(
-            status_code=404,
-            detail=f"A role with the Id of '{role_id}' could not be found"
-        )
+    foundRole = enforceExisting(Role, role_id, session)   
+    enforceUnique(Role, Role.name, role.name, session)
     
     roleData = role.model_dump(exclude_unset=True)
     foundRole.sqlmodel_update(roleData)
@@ -69,12 +56,12 @@ async def update_role(role_id: str, role: DTO.UpdateRoleRequest, session: Sessio
 
 ## DELETE ROLE BY ID
 @router.delete("/{role_id}", status_code=204)
-async def delete_role(role_id: str, session: SessionDep, currentUser = Depends(getAdmin)):
-    role = session.get(Roles, role_id)
-    if not role:
-        raise HTTPException(
-            status_code=404,
-            detail=f"A role with the Id of '{role_id}' could not be found")
+async def delete_role(role_id: int, session: SessionDep, currentUser = Depends(getAdmin)):
+
+    
+    protectCoreRoles(role_id)
+
+    role = enforceExisting(Role, role_id, session)
     
     session.delete(role)
     session.commit()

@@ -5,11 +5,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta, timezone
 import jwt
 from jwt.exceptions import InvalidTokenError
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from typing import Annotated
 
 from scripts.database import SessionDep
-from models.databaseModels import Users
+from models.databaseModels import User
 from sqlmodel import select
 
 settings = loadSettings("config.yaml")
@@ -40,7 +40,7 @@ def getPasswordHash(password: str):
     return passwordHash.hash(password)
 
 def getUser(username: str, session: SessionDep):
-    user = session.exec(select(Users).where(Users.username == username)).one_or_none()
+    user = session.exec(select(User).where(User.username == username)).one_or_none()
 
     return user
 
@@ -66,7 +66,7 @@ def createAccessToken(data: dict, expiresDelta: timedelta | None = None):
 
 def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
     credentailsException = HTTPException(
-        status_code=401,
+        status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Unauthorized",
         headers={"WWW-Authenticate": "Bearer"},
     )
@@ -90,7 +90,8 @@ def getAdmin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
         return user
     
     raise HTTPException(
-    status_code=401,
+    status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Unauthorized",
     headers={"WWW-Authenticate": "Bearer"},
     )
+
