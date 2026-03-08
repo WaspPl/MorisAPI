@@ -17,7 +17,7 @@ async def get_commands(session: SessionDep, currentUser = Depends(getCurrentUser
 async def get_command(command_id: int, session: SessionDep, currentUser = Depends(getCurrentUser)):
     command = session.exec(select(Command).join(Command_Role_Assignment).where(Command_Role_Assignment.role_id == currentUser.role_id).where(Command.id == command_id)).first()
     if not command:
-        raise HTTPException(status= status.HTTP_404_NOT_FOUND,
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND,
                             detail="Command not found")
     return command
 
