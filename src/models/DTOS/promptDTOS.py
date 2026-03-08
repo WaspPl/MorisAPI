@@ -3,7 +3,7 @@ from pydantic import BaseModel
 class getPromptResponse(BaseModel):
     id: int
     text: str
-    commandName: str
+    command_name: str
 
 class getPromptDetailsResponse(BaseModel):
     id: int
@@ -17,4 +17,12 @@ class createPromptRequest(BaseModel):
 class createPromptResponse(BaseModel):
     id: int
     text: str
-    commandName: str
+    command_name: str
+
+class updatePromptRequest(BaseModel):
+    text: str
+    command_id: int
+
+class updatePromptResponse(BaseModel):
+    text: str
+    command_name: str

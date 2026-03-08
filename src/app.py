@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from routes import assignPrompt, commands, messages, photo, status, auth, users, roles, prompts
+from routes import assignRole, commands, messages, photo, status, auth, users, roles, prompts
 
 app = FastAPI()
 
-app.include_router(assignPrompt.router)
+app.include_router(assignRole.router)
 app.include_router(commands.router)
 app.include_router(messages.router)
 app.include_router(photo.router)
