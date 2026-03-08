@@ -48,12 +48,16 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
 async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , currentUser = Depends(getAdmin)):
     foundUser = enforceExisting(User, user_id, session)
+
+    enforceUnique(User,User.username,user.username,session, user_id)
+    
     if user.role_id != 1 and foundUser.role_id == 1:
         protectAdminCount(session)
     
     role = enforceExisting(Role, user.role_id, session)
     userData = user.model_dump(exclude_unset=True)
-
+    if user.password:
+        userData["password"] = getPasswordHash(user.password)
     foundUser.sqlmodel_update(userData)
 
     session.add(foundUser)

@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends
 from scripts.auth import getCurrentUser, getAdmin
+from scripts.database import SessionDep, enforceExisting, enforceUnique
+from sqlmodel import select
+from models.databaseModels import Command, Command_Role_Assignment
 
 router = APIRouter(prefix="/commands", tags=["commands"])
 
 @router.get("")
-async def get_commands(user = Depends(getCurrentUser)):
-    return {"message": f"List of commands available to the user {user.username}"}
+async def get_commands(session: SessionDep, currentUser = Depends(getCurrentUser), limit: int = 100, offset: int = 0 ):
+    commands = session.exec(select(Command).join(Command_Role_Assignment).where(Command_Role_Assignment.role_id == currentUser.role_id).limit(limit).offset(offset)).all()
+    return commands
 
 @router.get("/{command_id}")
 async def get_command(command_id: str, user = Depends(getCurrentUser)):

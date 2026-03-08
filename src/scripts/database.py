@@ -71,8 +71,13 @@ def enforceExisting(tableModel: Type[T], id: int, session: SessionDep) -> T:
             detail=f"{modelName} with ID of {id} could not be found")
     return item
 
-def enforceUnique(tableModel: Type[T],tableVariable, newVariable, session: SessionDep) -> None:
-    existingItem = session.exec(select(tableModel).where(tableVariable == newVariable)).first()
+def enforceUnique(tableModel: Type[T],tableVariable, newVariable, session: SessionDep,  exclude_id: int = None) -> None:
+    statement = select(tableModel).where(tableVariable == newVariable)
+    
+    if exclude_id is not None:
+        statement = statement.where(tableModel.id != exclude_id)
+
+    existingItem = session.exec(statement).first()
 
     if existingItem:
         columnName = tableVariable.key
