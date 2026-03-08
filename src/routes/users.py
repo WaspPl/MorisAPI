@@ -13,13 +13,8 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=list[DTO.getUserResponse])
 async def get_users(session: SessionDep, offset: int = 0, limit: int = 100, currentUser = Depends(getCurrentUser)):
-    result = session.exec(select(User,Role).where(User.role_id==Role.id).offset(offset).limit(limit))
-    response = []
-    for user, role in result:
-        response.append(DTO.getUserResponse(id=user.id,
-                                            username=user.username, 
-                                            role_name= role.name))
-    return response
+    result = session.exec(select(User).offset(offset).limit(limit)).all()
+    return result
 
 @router.get("/{user_id}", response_model=DTO.getUserDetailsResponse)
 async def get_user(user_id: str,session: SessionDep, currentUser = Depends(getCurrentUser)):
@@ -41,9 +36,7 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
     session.commit()
     session.refresh(userModel,attribute_names=["role"])
 
-    return DTO.createUserResponse(id= userModel.id,
-                                  username= userModel.username,
-                                  role_name= userModel.role.name)
+    return userModel
 
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
 async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , currentUser = Depends(getAdmin)):
@@ -64,9 +57,7 @@ async def update_user(user_id: str, user: DTO.updateUserRequest, session: Sessio
     session.commit()
     session.refresh(foundUser,attribute_names=["role"])
 
-    return DTO.updateUserResponse(id= foundUser.id,
-                                  username= foundUser.username,
-                                  role_name= foundUser.role.name)
+    return foundUser
     
 @router.delete("/{user_id}", status_code=204)
 async def delete_user(user_id: int, session: SessionDep, currentUser = Depends(getAdmin)):

@@ -15,15 +15,32 @@ class User(SQLModel, table=True):
     role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")
 
+class Script(SQLModel, table=True):
+    id: int | None = Field(index=True, default=None, primary_key=True)
+    name: str | None = Field(unique=True)
+    content: str
+    commands: list["Command"] = Relationship(back_populates="script")
+
+class Sprite(SQLModel, table=True):
+    id: int | None = Field(index=True, default=None, primary_key=True)
+    name: str | None = Field(unique=True)
+    contentBase64: str
+    commands: list["Command"] = Relationship(back_populates="sprite")
+
 class Command(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     name: str
     description: str
-    script_name: str = Field(unique=True)
-    sprite_name: str
     sprite_repeat_times: int
     is_output_llm: bool | None = False
     llm_prefix: str = Field(default="")
+
+    script_id: int | None = Field(default=None, foreign_key="script.id", ondelete="RESTRICT")
+    script: Script | None = Relationship(back_populates="commands")
+
+    sprite_id: int | None = Field(default=None, foreign_key="sprite.id", ondelete="RESTRICT")
+    sprite: Sprite | None = Relationship(back_populates="commands")
+
 
     prompts: list["Prompt"] = Relationship(back_populates="command", cascade_delete=True)
     assignments: list["Command_Role_Assignment"] = Relationship(back_populates="command", cascade_delete=True)

@@ -1,9 +1,13 @@
 from pydantic import BaseModel
 
+class RoleMin(BaseModel):
+    id: int
+    name: str
+
 class getUserResponse(BaseModel):
     id: int
     username: str
-    role_name: str
+    role: RoleMin
 
 class getUserDetailsResponse(BaseModel):
     id: int
@@ -13,7 +17,7 @@ class getUserDetailsResponse(BaseModel):
 class createUserResponse(BaseModel):
     id: int
     username: str
-    role_name: str
+    role: RoleMin
 
 class updateUserRequest(BaseModel):
     username: str
@@ -24,4 +28,4 @@ class updateUserRequest(BaseModel):
 class updateUserResponse(BaseModel):
     id: int
     username: str
-    role_name: str
+    role: RoleMin

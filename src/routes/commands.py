@@ -21,8 +21,8 @@ async def get_command(command_id: int, session: SessionDep, currentUser = Depend
                             detail="Command not found")
     return command
 
-@router.post("")
-async def create_command(user = Depends(getAdmin)):
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=DTO.createCommandResponse)
+async def create_command(newCommand: DTO.createCommandRequest,user = Depends(getAdmin)):
     return {"message": "Command created"}
 
 @router.put("/{command_id}")

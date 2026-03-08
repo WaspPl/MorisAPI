@@ -1,9 +1,13 @@
 from pydantic import BaseModel
 
+class CommandMin(BaseModel):
+    id: int
+    name: str
+
 class getPromptResponse(BaseModel):
     id: int
     text: str
-    command_name: str
+    command: CommandMin
 
 class getPromptDetailsResponse(BaseModel):
     id: int
@@ -17,7 +21,7 @@ class createPromptRequest(BaseModel):
 class createPromptResponse(BaseModel):
     id: int
     text: str
-    command_name: str
+    command: CommandMin
 
 class updatePromptRequest(BaseModel):
     text: str
@@ -25,4 +29,4 @@ class updatePromptRequest(BaseModel):
 
 class updatePromptResponse(BaseModel):
     text: str
-    command_name: str
+    command: CommandMin
