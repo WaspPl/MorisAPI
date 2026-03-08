@@ -35,7 +35,7 @@ def populate_tables(session: Session):
         session.add(Role(id=2,name="user"))
         session.commit()
     if not session.exec(select(User)).first():
-        session.add(User(id=1, username="admin", password=getPasswordHash(settings.auth.default_admin_password), roleId=1))
+        session.add(User(id=1, username="admin", password=getPasswordHash(settings.auth.default_admin_password), role_id=1))
         session.commit()
 
 def create_db_and_tables():
@@ -50,7 +50,7 @@ def create_db_and_tables():
             AFTER DELETE ON role
             FOR EACH ROW
             BEGIN
-                UPDATE user SET roleId = 2 WHERE roleId = OLD.id;
+                UPDATE user SET role_id = 2 WHERE role_id = OLD.id;
             END;
         """))
         connection.commit()

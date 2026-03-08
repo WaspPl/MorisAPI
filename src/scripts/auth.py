@@ -86,7 +86,7 @@ def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: Sessio
 
 def getAdmin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
     user = getCurrentUser(token, session)
-    if user.roleId == 1:
+    if user.role_id == 1:
         return user
     
     raise HTTPException(

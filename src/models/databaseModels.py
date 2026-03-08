@@ -12,7 +12,7 @@ class User(SQLModel, table=True):
     username: str = Field(index=True, unique=True)
     password: str
 
-    role_id: int | None = Field(default=None, foreign_key="role.id")
+    role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")
 
 class Command(SQLModel, table=True):
