@@ -5,6 +5,7 @@ from models.databaseModels import User, Role
 from scripts.configToObject import loadSettings
 from sqlalchemy import event, text
 from sqlalchemy.engine import Engine 
+import base64
 
 DATABASE_URL = "sqlite:///./moris.db"
 
@@ -105,3 +106,23 @@ def protectCoreRoles(role_id: int) -> None:
             detail= "Role Admin and User are core to the system and thus cannot be modified"
         )
     return    
+
+def enforce_base64_image(base64_string: str):
+    if "," in base64_string:
+        base64_string = base64_string.split(",")[1]
+
+    try:
+        image_bytes = base64.b64decode(base64_string, validate=True)
+        
+        is_image = (
+            image_bytes.startswith(b'\x89PNG')
+        )
+        
+        if not is_image:
+            raise ValueError("Not a valid image format")
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Content must be a valid Base64 encoded image (PNG)."
+        )

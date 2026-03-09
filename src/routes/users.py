@@ -12,7 +12,7 @@ from sqlmodel import select, func
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=list[DTO.getUserResponse])
-async def get_users(session: SessionDep, offset: int = 0, limit: int = 100, currentUser = Depends(getCurrentUser)):
+async def get_users(session: SessionDep, offset: int = 0, limit: int = 10, currentUser = Depends(getCurrentUser)):
     result = session.exec(select(User).offset(offset).limit(limit)).all()
     return result
 
