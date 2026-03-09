@@ -24,7 +24,7 @@ class Script(SQLModel, table=True):
 class Sprite(SQLModel, table=True):
     id: int | None = Field(index=True, default=None, primary_key=True)
     name: str | None = Field(unique=True)
-    contentBase64: str
+    content: str
     commands: list["Command"] = Relationship(back_populates="sprite")
 
 class Command(SQLModel, table=True):
