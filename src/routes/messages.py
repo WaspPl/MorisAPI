@@ -3,12 +3,13 @@ from scripts.auth import getCurrentUser
 from scripts.database import SessionDep
 import models.DTOS.messagesDTOS as DTO
 from models.databaseModels import Message, Command, Command_Role_Assignment, User, Prompt, Sprite
-from sqlmodel import select, desc, asc
+from sqlmodel import select, desc, asc, literal, func
 from typing import Annotated
 from scripts.configToObject import SettingsDep
 from scripts.messageScripts import getLLMResponse, executeCommand, sendDataToDisplays
 from asyncio import create_task, sleep
 from datetime import datetime, timezone
+from pathlib import Path
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -26,11 +27,17 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
     sentTime = datetime.now(timezone.utc).replace(microsecond=0)
 
     # get a command that satisfies requirements
-    command = session.exec(select(Command)
+    result = session.exec(select(Command, Prompt.text)
                            .join(Command_Role_Assignment)
                            .join(Prompt)
                            .where(Command_Role_Assignment.role_id == currentUser.role_id)
-                           .where(Prompt.text == newMessage.content)).first()
+                           .where(literal(newMessage.content).like(Prompt.text))
+                           .order_by(func.char_length(Prompt.text).desc())).first()
+    if result:
+        command, prompt = result
+        arguments = newMessage.content[len(prompt)-1:].strip() 
+    
+
     
     # get settings depending on if the command was found or not
     defaultCommand = Command(id = None,
@@ -38,11 +45,11 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
                             sprite_repeat_times=1,
                             sprite= Sprite(content=""),
                             is_output_llm=True)
-    activeCommand = command or defaultCommand
-    print(activeCommand)
+    activeCommand = command if result else defaultCommand
+
 
     prefix = activeCommand.llm_prefix
-    content = await executeCommand() if command else ""
+    content = await executeCommand(Path(command.script_path), arguments) if result else ""
     sprite = activeCommand.sprite.content if activeCommand.sprite else ""
     spriteRepeatTimes = activeCommand.sprite_repeat_times
     llmOutput = activeCommand.is_output_llm
@@ -53,7 +60,7 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
     else: 
         textResponse = content
 
-    if settings.display.enabled:
+    if settings.display.enabled and newMessage.send_to_displays:
         create_task(sendDataToDisplays())
     
     userMessage = Message(user_id=currentUser.id,

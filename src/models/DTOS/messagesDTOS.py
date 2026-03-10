@@ -15,6 +15,7 @@ class getMessageResponse(BaseModel):
 
 class createMessageRequest(BaseModel):
     content: str
+    send_to_displays: bool | None = False
 
 class createMessageResponse(BaseModel):
     user: getMessageResponse
