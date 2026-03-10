@@ -3,9 +3,17 @@ api:
   port: 8080
 
 auth:
-  secret_key: changeThisToYourKey
+  secret_key: "changeThisToYourKey"
   algorithm: "HS256"
   token_expire_minutes: 30
   default_admin_password: "admin"
 
-scripts_dir: "./scripts"
+storage:
+  scripts_dir: "./scripts"
+  database_url: "sqlite:///./moris.db"
+
+display:
+  enabled: True
+  host: "0.0.0.0:2020"
+  sprite_height: 8
+  sprite_width: 8

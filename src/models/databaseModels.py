@@ -1,4 +1,5 @@
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, func
+from datetime import datetime, timezone
 
 class Role(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
@@ -14,6 +15,8 @@ class User(SQLModel, table=True):
 
     role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")
+
+    messages: list["Message"] = Relationship(back_populates="user")
 
 
 class Sprite(SQLModel, table=True):
@@ -53,3 +56,18 @@ class Command_Role_Assignment(SQLModel, table=True):
     
     role_id: int | None = Field(default=None, foreign_key="role.id", ondelete="CASCADE")  
     role: Role | None = Relationship(back_populates="command_assignments")
+
+class Message(SQLModel, table= True):
+    id: int | None = Field(index=True, default=None, primary_key= True)
+
+    user_id: int | None = Field(index= True, foreign_key='user.id', ondelete='CASCADE')
+    user: User | None = Relationship(back_populates="messages")
+
+    is_users: bool
+    content: str
+
+    was_command_executed: bool
+
+    time_sent: datetime | None = Field(sa_column_kwargs={
+                                            "server_default": func.now() 
+                                        })

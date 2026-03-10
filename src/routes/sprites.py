@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from models.DTOS import spriteDTOS as DTO
 from models.databaseModels import Sprite
-from scripts.database import SessionDep, enforceExisting, enforceUnique, enforce_base64_image
+from scripts.database import SessionDep, enforceExisting, enforceUnique, enforce_base64_image,  enforce_base64_image_size
 from scripts.auth import getAdmin, getCurrentUser
 from sqlmodel import select
-import base64
+from scripts.configToObject import SettingsDep
 
 router = APIRouter(prefix="/sprites",tags=["sprite"])
 
@@ -20,12 +20,13 @@ def get_sprite_details(sprite_id: int, session: SessionDep, currentUser = Depend
     return result
 
 @router.post("", response_model=DTO.createSpriteResponse, status_code=status.HTTP_201_CREATED)
-def create_sprite(newSprite: DTO.createSpriteRequest, session: SessionDep, currentUser=Depends(getAdmin)):
+
+def create_sprite(newSprite: DTO.createSpriteRequest, session: SessionDep, settings: SettingsDep, currentUser=Depends(getAdmin)):
     
     enforceUnique(Sprite, Sprite.name, newSprite.name, session)
 
     enforce_base64_image(newSprite.content)
-    
+    enforce_base64_image_size(newSprite.content, settings.display.sprite_height, settings.display.sprite_width, True)
     newItem = Sprite.model_validate(newSprite)
     session.add(newItem)
     session.commit()

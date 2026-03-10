@@ -1,5 +1,5 @@
 from pwdlib import PasswordHash
-from scripts.configToObject import loadSettings
+from scripts.configToObject import load_settings
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta, timezone
@@ -12,7 +12,7 @@ from scripts.database import SessionDep
 from models.databaseModels import User
 from sqlmodel import select
 
-settings = loadSettings("config.yaml")
+settings = load_settings()
 
 token_expire_minutes = settings.auth.token_expire_minutes
 secretKey = settings.auth.secret_key

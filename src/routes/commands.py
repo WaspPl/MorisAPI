@@ -6,7 +6,7 @@ from models.databaseModels import Command, Command_Role_Assignment, Sprite
 import models.DTOS.commandDTOS as DTO
 from fastapi import HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
-from scripts.configToObject import loadSettings
+from scripts.configToObject import SettingsDep
 from pathlib import Path
 import shutil
 
@@ -70,16 +70,16 @@ async def delete_command(command_id: str, session: SessionDep, user = Depends(ge
     return 
 
 @router.get('/{command_id}/script')
-async def download_script(command_id: int, session: SessionDep, currentUser = Depends(getAdmin), scritps_path = Path(loadSettings('config.yaml').scripts_dir)):
-    
+async def download_script(command_id: int, session: SessionDep, settings: SettingsDep, currentUser = Depends(getAdmin)):
+    scritps_path = Path(settings.storage.scripts_dir)
     command = enforceExisting(Command, command_id, session)
     if not command.script_path:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="This command has no script yet.")
     return FileResponse(path=command.script_path, filename=f"script_{command_id}.py")
 @router.put('/{command_id}/script')
-async def upload_script(command_id: int, session: SessionDep, file: UploadFile = File(...), currentUser = Depends(getAdmin), scritps_path = Path(loadSettings('config.yaml').scripts_dir)):
-    
+async def upload_script(command_id: int, session: SessionDep,settings: SettingsDep , file: UploadFile = File(...), currentUser = Depends(getAdmin)):
+    scritps_path = Path(settings.storage.scripts_dir)    
     scritps_path.mkdir(parents=True, exist_ok=True)
 
     command = enforceExisting(Command, command_id, session)

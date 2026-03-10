@@ -2,7 +2,7 @@ from fastapi import APIRouter
 import models.DTOS.tokenDTOS as DTO
 from scripts.auth import authenticateUser, createAccessToken, getPasswordHash, getUser
 from fastapi import HTTPException, status
-from scripts.configToObject import loadSettings
+from scripts.configToObject import SettingsDep
 from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
@@ -12,13 +12,14 @@ from models.databaseModels import User
 
 router = APIRouter(prefix="/token", tags=["auth"])
 
-settings = loadSettings("config.yaml")
 
-token_expire_minutes = settings.auth.token_expire_minutes
+
 
 @router.post("", response_model=DTO.loginResponse)
-async def login(formData: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep):
+async def login(formData: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep, settings: SettingsDep):
     
+    token_expire_minutes = settings.auth.token_expire_minutes
+
     authenticatedUser = authenticateUser(formData.username, formData.password, session = session)
 
     if not authenticatedUser:

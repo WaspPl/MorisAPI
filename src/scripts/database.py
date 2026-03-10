@@ -2,18 +2,22 @@ from sqlmodel import create_engine, Session, SQLModel, select, func
 from fastapi import Depends, HTTPException, status
 from typing import Annotated, TypeVar, Type
 from models.databaseModels import User, Role
-from scripts.configToObject import loadSettings
+from scripts.configToObject import SettingsDep, load_settings
 from sqlalchemy import event, text
 from sqlalchemy.engine import Engine 
 import base64
+from PIL import Image
+from io import BytesIO
 
-DATABASE_URL = "sqlite:///./moris.db"
+
+settings = load_settings()
+
+DATABASE_URL = settings.storage.database_url
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 SessionLocal = Session(autocommit=False, autoflush=False, bind=engine)
 
-settings = loadSettings('config.yaml')
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -126,3 +130,21 @@ def enforce_base64_image(base64_string: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Content must be a valid Base64 encoded image (PNG)."
         )
+    
+def enforce_base64_image_size(base64_string: str, height: int, width: int, is_witdth_factor: bool = True):
+    if "," in base64_string:
+        b64_string = base64_string.split(",")[1]
+    imgData = base64.b64decode(b64_string)
+    img = Image.open(BytesIO(imgData))
+    imgWidth, imgHeight = img.size
+
+    if imgHeight != height:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Sprite must have a height of {height}px")
+    if is_witdth_factor and imgWidth % width != 0:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Sprite must have a width divisible by {width}")
+    if not is_witdth_factor and imgWidth != width:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Sprite must have a width of {width}px")
+   
