@@ -16,7 +16,7 @@ class getPromptDetailsResponse(BaseModel):
 
 class createPromptRequest(BaseModel):
     text: str
-    commandId: int
+    command_id: int
 
 class createPromptResponse(BaseModel):
     id: int

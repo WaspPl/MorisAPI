@@ -30,7 +30,7 @@ class Command(SQLModel, table=True):
     is_output_llm: bool | None = Field(default=False)
     llm_prefix: str | None = Field(default="")
 
-    script_path: str = Field(default="")
+    script_path: str| None = Field(default=None)
     sprite_id: int | None = Field(default=None, foreign_key="sprite.id", ondelete="RESTRICT")
     sprite: Sprite | None = Relationship(back_populates="commands")
 

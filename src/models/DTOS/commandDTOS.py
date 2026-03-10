@@ -20,38 +20,38 @@ class getCommandResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin
+    sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str 
+    llm_prefix: str | None
     
 class getCommandDetailsResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin
+    sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str 
+    llm_prefix: str | None
     prompts: list[PromptMin] 
     assignments: list[AssignedRoleMin]
 
 class createCommandRequest(BaseModel):
     name: str
     description: str
-    sprite_id: int
+    sprite_id: int | None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str 
+    llm_prefix: str | None
 
 class createCommandResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin
+    sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str 
+    llm_prefix: str | None
 
 class updateCommandRequest(BaseModel):
     name: str
@@ -59,14 +59,16 @@ class updateCommandRequest(BaseModel):
     sprite_id: int
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str 
+    llm_prefix: str | None
+
 
 class updateCommandResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin
+    sprite: SpriteMin | None    
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str 
+    llm_prefix: str | None
+
  

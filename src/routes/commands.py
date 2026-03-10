@@ -29,7 +29,9 @@ async def get_command(command_id: int, session: SessionDep, currentUser = Depend
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=DTO.createCommandResponse)
 async def create_command(newCommand: DTO.createCommandRequest, session: SessionDep, currentUser = Depends(getAdmin)):
-    enforceExisting(Sprite, newCommand.sprite_id, session)
+    
+    if newCommand.sprite_id:
+        enforceExisting(Sprite, newCommand.sprite_id, session)
 
     enforceUnique(Command, Command.name, newCommand.name, session)
 
@@ -61,10 +63,10 @@ async def update_command(command_id: str, newCommand: DTO.updateCommandRequest, 
 @router.delete("/{command_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_command(command_id: str, session: SessionDep, user = Depends(getAdmin)):
     command = enforceExisting(Command, command_id, session)
-    if Path(command.script_path).exists():
+    if command.script_path and Path(command.script_path).exists():
         Path(command.script_path).unlink()
     session.delete(command)
-    session.commit
+    session.commit()
     return 
 
 @router.get('/{command_id}/script')
