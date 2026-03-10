@@ -9,8 +9,8 @@ auth:
   default_admin_password: "admin"
 
 storage:
-  scripts_dir: "./scripts"
-  database_url: "sqlite:///./moris.db"
+  scripts_dir: "./storage/scripts"
+  database_url: "sqlite:///./storage/moris.db"
 
 display:
   enabled: True

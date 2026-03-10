@@ -1,24 +1,21 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+class CommandMin(BaseModel):
+    id: int
+    name: str
+
 class getMessageResponse(BaseModel):
     id: int
     user_id: int 
     content: str
     is_users: bool
-    was_command_executed: bool
+    executed_command: CommandMin | None = None
     time_sent: datetime
 
 class createMessageRequest(BaseModel):
     content: str
 
 class createMessageResponse(BaseModel):
-    id: int
-    user_id: int 
-    
-    content: str
-    response: str
-
-    was_command_executed: bool
-
-    time_sent: datetime
+    user: getMessageResponse
+    response: getMessageResponse

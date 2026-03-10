@@ -40,7 +40,8 @@ class Command(SQLModel, table=True):
 
     prompts: list["Prompt"] = Relationship(back_populates="command", cascade_delete=True)
     assignments: list["Command_Role_Assignment"] = Relationship(back_populates="command", cascade_delete=True)
-    
+    messages: list["Message"] = Relationship(back_populates='executed_command')
+
 class Prompt(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     text: str = Field(unique=True, index=True)
@@ -66,7 +67,8 @@ class Message(SQLModel, table= True):
     is_users: bool
     content: str
 
-    was_command_executed: bool
+    executed_command_id: int | None = Field(default=None, foreign_key='command.id')
+    executed_command: Command | None = Relationship(back_populates='messages')
 
     time_sent: datetime | None = Field(sa_column_kwargs={
                                             "server_default": func.now() 
