@@ -6,7 +6,7 @@ from scripts.auth import getAdmin, getCurrentUser
 from sqlmodel import select
 import base64
 
-router = APIRouter(prefix="/sprite",tags=["sprite"])
+router = APIRouter(prefix="/sprites",tags=["sprite"])
 
 @router.get("", response_model=list[DTO.getSpriteResponse])
 def get_sprites(session: SessionDep, limit = 10, offset = 0, currentUser = Depends(getAdmin)):
