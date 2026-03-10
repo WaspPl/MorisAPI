@@ -7,36 +7,42 @@ from typing import Annotated
 from fastapi import Depends
 
 class ApiSettings(BaseModel):
-    host: str
-    port: int
+    host: str = "0.0.0.0"
+    port: int = 8080
 
 class AuthSettings(BaseModel):
-    secret_key: str
-    algorithm: str
-    token_expire_minutes: int
-    default_admin_password: str
+    secret_key: str = "ChangeThisToYourSecretKey"
+    algorithm: str = "HS256"
+    token_expire_minutes: int = 30
+    default_admin_password: str = "admin"
 
 class StorageSettings(BaseModel):
-    scripts_dir: Path
-    database_url: str
+    scripts_dir: Path = ".storage/scritps"
+    database_url: str = "sqlite:///./storage/moris.db"
 
 class DisplaySettings(BaseModel):
-    enabled: bool
-    host: str
-    sprite_height: int
-    sprite_width: int
+    enabled: bool = True
+    api_url: str = "0.0.0.0:2020"
+    sprite_height: int = 8
+    sprite_width: int = 8
 
 class Settings(BaseSettings):
-    api: ApiSettings
-    auth: AuthSettings
-    storage: StorageSettings
-    display: DisplaySettings
+    api: ApiSettings = ApiSettings()
+    auth: AuthSettings = AuthSettings()
+    storage: StorageSettings = StorageSettings()
+    display: DisplaySettings = DisplaySettings()
 
 
 @lru_cache()
 def load_settings() -> Settings:
     config_path = Path(__file__).resolve().parents[2] / "config.yaml"
     
+    if not config_path.exists():
+        settings = Settings()     
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(config_path, "w") as f:
+            yaml.dump(settings.model_dump(), f, default_flow_style=False)
+
     with open(config_path, "r") as f:
         config_dict = yaml.safe_load(f)
     
