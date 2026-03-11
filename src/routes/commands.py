@@ -48,7 +48,8 @@ async def create_command(newCommand: DTO.createCommandRequest, session: SessionD
 @router.put("/{command_id}", response_model=DTO.updateCommandResponse)
 async def update_command(command_id: str, newCommand: DTO.updateCommandRequest, session: SessionDep, user = Depends(getAdmin)):
     commandItem = enforceExisting(Command, command_id, session)
-    enforceExisting(Sprite, newCommand.sprite_id, session)
+    if newCommand.sprite_id:
+        enforceExisting(Sprite, newCommand.sprite_id, session)
     enforceUnique(Command, Command.name, newCommand.name, session, command_id)
 
     commandData = newCommand.model_dump()

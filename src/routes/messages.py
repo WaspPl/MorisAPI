@@ -54,7 +54,6 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
         activeCommand = command if result else defaultCommand
 
 
-        prefix = activeCommand.llm_prefix
         content = await executeCommand(Path(command.script_path), arguments) if result else ""
         sprite = activeCommand.sprite.content if activeCommand.sprite else ""
         spriteRepeatTimes = activeCommand.sprite_repeat_times

@@ -125,19 +125,24 @@ def protectCoreRoles(role_id: int) -> None:
     return    
 
 def is_base64_image(base64_string: str) -> bool:
+    base64_string = base64_string.strip()
     if "," in base64_string:
             base64_string = base64_string.split(",")[1]
     try:
+        print(base64_string)
         image_bytes = base64.b64decode(base64_string, validate=True)
         
         is_image = (
-            image_bytes.startswith(b'\x89PNG')
+            image_bytes.startswith(b'\x89PNG') or #png
+            image_bytes.startswith(b'\xff\xd8\xff') #jpeg
         )
         
         if not is_image:
             raise ValueError("Not a valid image format")
+        print('image')
         return True
-    except Exception:
+    except Exception as e:
+        print(e)
         return False
 def enforce_base64_image(base64_string: str):
     

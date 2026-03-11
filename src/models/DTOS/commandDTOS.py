@@ -39,36 +39,36 @@ class getCommandDetailsResponse(BaseModel):
 class createCommandRequest(BaseModel):
     name: str
     description: str
-    sprite_id: int | None
+    sprite_id: int | None = None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str | None
+    llm_prefix: str | None = None
 
 class createCommandResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin | None
+    sprite: SpriteMin | None = None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str | None
+    llm_prefix: str | None = None
 
 class updateCommandRequest(BaseModel):
     name: str
-    description: str
-    sprite_id: int
+    description: str 
+    sprite_id: int | None = None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str | None
+    llm_prefix: str | None = None
 
 
 class updateCommandResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin | None    
+    sprite: SpriteMin | None = None
     sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str | None
+    llm_prefix: str | None = None
 
  
