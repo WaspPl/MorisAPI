@@ -9,6 +9,7 @@ import base64
 from PIL import Image
 from io import BytesIO
 import re
+import os
 
 
 settings = load_settings()
@@ -19,6 +20,7 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 SessionLocal = Session(autocommit=False, autoflush=False, bind=engine)
 
+db_path = DATABASE_URL.replace("sqlite:///", "")
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
@@ -50,6 +52,11 @@ def populate_tables(session: Session):
         session.commit()
 
 def create_db_and_tables():
+    db_dir = os.path.dirname(db_path)
+
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
@@ -117,10 +124,9 @@ def protectCoreRoles(role_id: int) -> None:
         )
     return    
 
-def enforce_base64_image(base64_string: str):
+def is_base64_image(base64_string: str) -> bool:
     if "," in base64_string:
-        base64_string = base64_string.split(",")[1]
-
+            base64_string = base64_string.split(",")[1]
     try:
         image_bytes = base64.b64decode(base64_string, validate=True)
         
@@ -130,13 +136,18 @@ def enforce_base64_image(base64_string: str):
         
         if not is_image:
             raise ValueError("Not a valid image format")
-
+        return True
     except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Content must be a valid Base64 encoded image (PNG)."
-        )
+        return False
+def enforce_base64_image(base64_string: str):
     
+        if not is_base64_image(base64_string):
+        
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Content must be a valid Base64 encoded image (PNG)."
+            )
+        
 def enforce_base64_image_size(base64_string: str, height: int, width: int, is_witdth_factor: bool = True):
     if "," in base64_string:
         b64_string = base64_string.split(",")[1]

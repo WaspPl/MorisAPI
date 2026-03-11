@@ -67,6 +67,7 @@ class Message(SQLModel, table= True):
 
     is_users: bool
     content: str
+    type: str
 
     executed_command_id: int | None = Field(default=None, foreign_key='command.id')
     executed_command: Command | None = Relationship(back_populates='messages')
