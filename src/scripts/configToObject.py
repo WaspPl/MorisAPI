@@ -17,7 +17,7 @@ class AuthSettings(BaseModel):
     default_admin_password: str = "admin"
 
 class StorageSettings(BaseModel):
-    scripts_dir: Path = ".storage/scritps"
+    scripts_dir: Path = "storage/scripts"
     database_url: str = "sqlite:///./storage/moris.db"
 
 class DisplaySettings(BaseModel):
