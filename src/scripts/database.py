@@ -8,6 +8,7 @@ from sqlalchemy.engine import Engine
 import base64
 from PIL import Image
 from io import BytesIO
+import re
 
 
 settings = load_settings()
@@ -24,6 +25,11 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+    # SET UP REGEX
+    def regexp(expr, item):
+        reg = re.compile(expr)
+        return reg.search(item) is not None
+    dbapi_connection.create_function("REGEXP", 2, regexp)
 
 
     

@@ -10,6 +10,7 @@ from scripts.messageScripts import getLLMResponse, executeCommand, sendDataToDis
 from asyncio import create_task, sleep
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -32,12 +33,15 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
                            .join(Command_Role_Assignment)
                            .join(Prompt)
                            .where(Command_Role_Assignment.role_id == currentUser.role_id)
-                           .where(literal(newMessage.content).like(Prompt.text))
+                           .where(literal(newMessage.content).op('REGEXP')(Prompt.text))
                            .order_by(func.char_length(Prompt.text).desc())).first()
     if result:
-        command, prompt = result
-        arguments = newMessage.content[len(prompt)-1:].strip() 
+        command, prompt_pattern = result
+        match = re.search(prompt_pattern, newMessage.content)
     
+        if match:
+            arguments = match.groupdict()
+
 
     
     # get settings depending on if the command was found or not

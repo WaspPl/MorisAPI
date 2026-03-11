@@ -7,9 +7,10 @@ from sqlmodel import select, desc
 from models.databaseModels import Message
 from scripts.configToObject import SettingsDep
 import requests
+import json
 
 
-async def executeCommand(script_path: Path, arguments_string: str) -> str:
+async def executeCommand(script_path: Path, arguments) -> str:
     if not script_path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -17,7 +18,7 @@ async def executeCommand(script_path: Path, arguments_string: str) -> str:
         )
     try:
         result = subprocess.run(
-            ["python", str(script_path), arguments_string],
+            ["python", str(script_path), json.dumps(arguments)],
             capture_output=True,
             text=True,
             check=True

@@ -45,13 +45,13 @@ async def create_command(newCommand: DTO.createCommandRequest, session: SessionD
 
     return command
 
-@router.put("/{command_id}")
+@router.put("/{command_id}", response_model=DTO.updateCommandResponse)
 async def update_command(command_id: str, newCommand: DTO.updateCommandRequest, session: SessionDep, user = Depends(getAdmin)):
     commandItem = enforceExisting(Command, command_id, session)
     enforceExisting(Sprite, newCommand.sprite_id, session)
     enforceUnique(Command, Command.name, newCommand.name, session, command_id)
 
-    commandData = commandItem.model_dump
+    commandData = newCommand.model_dump()
     command = commandItem.sqlmodel_update(commandData)
 
     session.add(command)
