@@ -12,6 +12,7 @@ class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     username: str = Field(index=True, unique=True)
     password: str
+    llm_prefix: str = Field(default=None)
 
     role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")

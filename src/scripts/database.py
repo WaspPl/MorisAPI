@@ -40,7 +40,7 @@ def populate_tables(session: Session):
         session.add(Role(id=2,name="user"))
         session.commit()
     if not session.exec(select(User)).first():
-        session.add(User(id=1, username="admin", password=getPasswordHash(settings.auth.default_admin_password), role_id=1))
+        session.add(User(id=1, username="admin", password=getPasswordHash(settings.auth.default_admin_password), role_id=1, llm_prefix=""))
         session.commit()
 
 def create_db_and_tables():

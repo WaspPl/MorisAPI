@@ -26,11 +26,20 @@ class DisplaySettings(BaseModel):
     sprite_height: int = 8
     sprite_width: int = 8
 
+class LLMSettings(BaseModel):
+    api_url: str = "https://api.openai.com/v1/chat/completions"
+    auth_token: str = "YouAPITokenGoesHere"
+    model: str = 'gpt-5-nano'
+    previous_messages_sent: int = 6
+    verbosity: str = 'low'
+
+    
 class Settings(BaseSettings):
     api: ApiSettings = ApiSettings()
     auth: AuthSettings = AuthSettings()
     storage: StorageSettings = StorageSettings()
     display: DisplaySettings = DisplaySettings()
+    LLM: LLMSettings = LLMSettings()
 
 
 @lru_cache()

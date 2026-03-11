@@ -3,10 +3,10 @@ from scripts.auth import getCurrentUser
 from scripts.database import SessionDep
 import models.DTOS.messagesDTOS as DTO
 from models.databaseModels import Message, Command, Command_Role_Assignment, User, Prompt, Sprite
-from sqlmodel import select, desc, asc, literal, func
+from sqlmodel import select, desc, asc, literal, func, delete
 from typing import Annotated
 from scripts.configToObject import SettingsDep
-from scripts.messageScripts import getLLMResponse, executeCommand, sendDataToDisplays
+from scripts.messageScripts import getLLMResponse, executeCommand, sendDataToDisplays, buildLLMQuery
 from asyncio import create_task, sleep
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,6 +24,7 @@ async def get_messages(session: SessionDep,limit: int = 10, offset: int = 0,curr
 
 @router.post("",response_model=DTO.createMessageResponse,  status_code=status.HTTP_201_CREATED)
 async def create_message(newMessage: DTO.createMessageRequest,session: SessionDep,settings: SettingsDep, currentUser: Annotated[User,Depends(getCurrentUser)]):
+
     sentTime = datetime.now(timezone.utc).replace(microsecond=0)
 
     # get a command that satisfies requirements
@@ -56,7 +57,8 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
 
     # if llmOutput is True send data to an llm
     if llmOutput:
-        textResponse = await getLLMResponse(content)
+        LLMQuery = buildLLMQuery(session, currentUser.id, settings.LLM.previous_messages_sent, newMessage.content, currentUser.llm_prefix)
+        textResponse = await getLLMResponse(LLMQuery, settings)
     else: 
         textResponse = content
 
@@ -88,3 +90,10 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
         user=DTO.getMessageResponse.model_validate(userMessageData),
         response=DTO.getMessageResponse.model_validate(responseMessageData)
     )
+
+@router.delete("/all", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_all_users_messages(session: SessionDep, currentUser: Annotated[User, Depends(getCurrentUser)]):
+    session.exec(delete(Message)
+                 .where(Message.user_id == currentUser.id))
+    session.commit()
+    return
