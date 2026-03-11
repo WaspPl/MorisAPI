@@ -4,8 +4,6 @@ from scripts.database import SessionDep, protectCoreRoles, enforceUnique, enforc
 from models.databaseModels import Role
 from sqlmodel import select
 from scripts.auth import getCurrentUser, getAdmin
-from typing import Annotated
-from models.databaseModels import User
 
 router = APIRouter(prefix="/Role", tags=["Role"],)
 

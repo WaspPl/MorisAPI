@@ -30,7 +30,8 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
     
     userModel = User(username=formData.username, 
                      password=getPasswordHash(formData.password), 
-                     role_id = 2)
+                     role_id = 2,
+                     llm_prefix="")
 
     session.add(userModel)
     session.commit()
@@ -40,12 +41,15 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
 
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
 async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , currentUser = Depends(getAdmin)):
+    if currentUser.id == user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="To edit your own user use the /me endpoint")
     foundUser = enforceExisting(User, user_id, session)
-
-    enforceUnique(User,User.username,user.username,session, user_id)
     
     if user.role_id != 1 and foundUser.role_id == 1:
         protectAdminCount(session)
+    
+    enforceUnique(User,User.username,user.username,session, user_id)
     
     role = enforceExisting(Role, user.role_id, session)
     userData = user.model_dump(exclude_unset=True)

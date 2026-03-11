@@ -6,7 +6,7 @@ from sqlmodel import select
 from models.databaseModels import Prompt, Command
 
 
-router = APIRouter(prefix="/prompts", tags=["prompts"], dependencies= [Depends(getCurrentUser)],)
+router = APIRouter(prefix="/prompts", tags=["prompts"],)
 
 # region unnecessary
 # Commented methods i deemed unnecessary, but want to keep them in case they turn out to be needed after all
