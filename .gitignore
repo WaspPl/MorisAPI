@@ -217,6 +217,6 @@ __marimo__/
 
 *.db
 
-storage/scripts
+storage/scripts/
 
 config.yaml
