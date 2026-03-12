@@ -1,50 +1,50 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from scripts.auth import getCurrentUser, getPasswordHash, createAccessToken
+from scripts.auth import get_current_user, get_password_hash, create_access_token
 from scripts.database import SessionDep
-from scripts.dataValidations import protectAdminCount, enforceUnique, enforceExisting
+from scripts.dataValidations import protect_admin_count, enforce_unique, enforce_existing
 from models.databaseModels import User, Role
 from typing import Annotated
 import models.DTOS.meDTOS as DTO
-from scripts.configToObject import SettingsDep
+from scripts.settings import SettingsDep
 
 router = APIRouter(prefix="/me", tags=["me"])
 
 @router.get("", response_model= DTO.getMeResponse)
-async def get_active_user(currentUser: Annotated[User, Depends(getCurrentUser)]):
-    return currentUser
+async def get_active_user(current_user: Annotated[User, Depends(get_current_user)]):
+    return current_user
 
 @router.put("", response_model=DTO.updateMeResponse)
-async def update_current_user(newUser: DTO.updateMeRequest, currentUser: Annotated[User, Depends(getCurrentUser)], session: SessionDep, settings: SettingsDep):
+async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annotated[User, Depends(get_current_user)], session: SessionDep, settings: SettingsDep):
     
-    enforceExisting(Role, newUser.role_id, session)
+    enforce_existing(Role, new_user.role_id, session)
 
-    if newUser.role_id != currentUser.role_id:
-        if currentUser.role_id != 1:
+    if new_user.role_id != current_user.role_id:
+        if current_user.role_id != 1:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail="You don't have permission to change your own role.")
         else:
-            protectAdminCount(session)
+            protect_admin_count(session)
 
     
 
-    enforceUnique(User, User.username, newUser.username, session, currentUser.id)
+    enforce_unique(User, User.username, new_user.username, session, current_user.id)
     
-    userData = newUser.model_dump(exclude_unset=True)
+    userData = new_user.model_dump(exclude_unset=True)
     if "password" in userData and userData["password"]:
-        userData["password"] = getPasswordHash(userData["password"])
+        userData["password"] = get_password_hash(userData["password"])
 
-    currentUser.sqlmodel_update(userData)
+    current_user.sqlmodel_update(userData)
 
-    session.add(currentUser)
+    session.add(current_user)
     session.commit()
-    session.refresh(currentUser)
+    session.refresh(current_user)
 
-    token = createAccessToken(data={"sub":currentUser.username})
+    token = create_access_token(data={"sub":current_user.username})
 
 
     response = {
-        **currentUser.model_dump(),
-        'role' : currentUser.role.__dict__,
+        **current_user.model_dump(),
+        'role' : current_user.role.__dict__,
         'access_token' : token,
         'token_type' : 'bearer'
 
@@ -53,8 +53,8 @@ async def update_current_user(newUser: DTO.updateMeRequest, currentUser: Annotat
     return DTO.updateMeResponse.model_validate(response)
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(currentUser: Annotated[User, Depends(getCurrentUser)], session: SessionDep):
-    protectAdminCount(session)
-    session.delete(currentUser)
+async def delete_user(current_user: Annotated[User, Depends(get_current_user)], session: SessionDep):
+    protect_admin_count(session)
+    session.delete(current_user)
     session.commit()
     return

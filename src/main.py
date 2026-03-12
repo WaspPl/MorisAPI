@@ -1,8 +1,7 @@
 import uvicorn
 from app import app
-from scripts.configToObject import load_settings, SettingsDep
+from scripts.settings import load_settings
 from scripts.database import engine, create_db_and_tables
-import models.databaseModels
 
 if __name__ == "__main__":    
         settings = load_settings()

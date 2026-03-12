@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship, func
-from datetime import datetime, timezone
+from datetime import datetime
 
 class Role(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)

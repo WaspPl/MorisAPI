@@ -1,8 +1,8 @@
 from pwdlib import PasswordHash
-from scripts.configToObject import load_settings
+from scripts.settings import load_settings
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import jwt
 from jwt.exceptions import InvalidTokenError
 from fastapi import Depends, HTTPException, status
@@ -33,38 +33,38 @@ dummyHash = passwordHash.hash("dummyPasswordLol")
 
 OAuth2Scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-def verifyPassword(plainPassword: str, hashedPassword: str):
-    return passwordHash.verify(plainPassword, hashedPassword)
+def verify_password(plain_password: str, hashed_password: str):
+    return passwordHash.verify(plain_password, hashed_password)
 
-def getPasswordHash(password: str):
+def get_password_hash(password: str):
     return passwordHash.hash(password)
 
-def getUser(username: str, session: SessionDep):
+def get_user(username: str, session: SessionDep):
     user = session.exec(select(User).where(User.username == username)).one_or_none()
 
     return user
 
-def authenticateUser(username: str, password: str, session: SessionDep):
-    user = getUser(username, session)
+def authenticate_user(username: str, password: str, session: SessionDep):
+    user = get_user(username, session)
     
     if not user:
-        verifyPassword(password, dummyHash)
+        verify_password(password, dummyHash)
         return False
-    if not verifyPassword(password, user.password):
+    if not verify_password(password, user.password):
         return False
     return user
 
-def createAccessToken(data: dict, expiresDelta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
     dataToEncode = data.copy()
-    if expiresDelta:
-        expire = datetime.now() + expiresDelta
+    if expires_delta:
+        expire = datetime.now() + expires_delta
     else:
         expire = datetime.now() + timedelta(minutes = token_expire_minutes)
     dataToEncode.update({"exp":expire})
     encodedJWT = jwt.encode(dataToEncode, secretKey, algorithm=algorithm)
     return encodedJWT
 
-def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
     credentailsException = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Unauthorized",
@@ -78,14 +78,14 @@ def getCurrentUser(token: Annotated[str, Depends(oauth2_scheme)],session: Sessio
         tokenData = TokenData(username = username)
     except InvalidTokenError:
         raise credentailsException
-    user = getUser(username= tokenData.username, session = session)
+    user = get_user(username= tokenData.username, session = session)
     if user is None:
         raise credentailsException
     return user
 
 
-def getAdmin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
-    user = getCurrentUser(token, session)
+def get_admin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep):
+    user = get_current_user(token, session)
     if user.role_id == 1:
         return user
     

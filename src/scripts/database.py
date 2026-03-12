@@ -2,7 +2,7 @@ from sqlmodel import create_engine, Session, SQLModel, select, func
 from fastapi import Depends
 from typing import Annotated
 from models.databaseModels import User, Role
-from scripts.configToObject import load_settings
+from scripts.settings import load_settings
 from sqlalchemy import event, text
 from sqlalchemy.engine import Engine 
 import re

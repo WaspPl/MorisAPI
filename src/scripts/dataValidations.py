@@ -9,34 +9,34 @@ from models.databaseModels import User
 
 T = TypeVar("T", bound=SQLModel)
 
-def enforceExisting(tableModel: Type[T], id: int, session: SessionDep) -> T:
-    item = session.get(tableModel, id)
+def enforce_existing(table_model: Type[T], id: int, session: SessionDep) -> T:
+    item = session.get(table_model, id)
     if not item:
-        modelName = tableModel.__name__
+        modelName = table_model.__name__
         raise HTTPException(
             status_code=404,
             detail=f"{modelName} with ID of {id} could not be found")
     return item
 
-def enforceUnique(tableModel: Type[T],tableVariable, newVariable, session: SessionDep,  exclude_id: int = None) -> None:
-    statement = select(tableModel).where(tableVariable == newVariable)
+def enforce_unique(table_model: Type[T],table_variable, new_variable, session: SessionDep,  exclude_id: int = None) -> None:
+    statement = select(table_model).where(table_variable == new_variable)
     
     if exclude_id is not None:
-        statement = statement.where(tableModel.id != exclude_id)
+        statement = statement.where(table_model.id != exclude_id)
 
     existingItem = session.exec(statement).first()
 
     if existingItem:
-        columnName = tableVariable.key
-        modelName = tableModel.__name__
+        columnName = table_variable.key
+        modelName = table_model.__name__
         
         raise HTTPException(
             status_code=400,
-            detail=f"{modelName} with {columnName} '{newVariable}' already exists"
+            detail=f"{modelName} with {columnName} '{new_variable}' already exists"
         )
     return
 
-def protectAdminCount(session: SessionDep) -> None:
+def protect_admin_count(session: SessionDep) -> None:
     admin_count = session.exec(select(func.count(User.id)).where(User.role_id == 1)).one()
     if admin_count <= 1:
         raise HTTPException(
@@ -45,7 +45,7 @@ def protectAdminCount(session: SessionDep) -> None:
         )
     return
 
-def protectCoreRoles(role_id: int) -> None:
+def protect_core_roles(role_id: int) -> None:
     if role_id in [1,2]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

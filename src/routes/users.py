@@ -5,32 +5,33 @@ from typing import Annotated
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from scripts.database import SessionDep
-from scripts.dataValidations import enforceExisting, enforceUnique, protectAdminCount
-from scripts.auth import getUser, getCurrentUser, getPasswordHash, getAdmin
+from scripts.dataValidations import enforce_existing, enforce_unique, protect_admin_count
+from scripts.auth import get_current_user, get_password_hash, get_admin
 from sqlmodel import select, func
+
 
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=list[DTO.getUserResponse])
-async def get_users(session: SessionDep, offset: int = 0, limit: int = 10, currentUser = Depends(getCurrentUser)):
+async def get_users(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10):
     result = session.exec(select(User).offset(offset).limit(limit)).all()
     return result
 
 @router.get("/{user_id}", response_model=DTO.getUserDetailsResponse)
-async def get_user(user_id: str,session: SessionDep, currentUser = Depends(getCurrentUser)):
-    userItem = enforceExisting(User, user_id, session)
+async def get_user(user_id: str,session: SessionDep, current_user: Annotated[User,Depends(get_current_user)]):
+    userItem = enforce_existing(User, user_id, session)
     return userItem
     
 @router.post("", response_model=DTO.createUserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep, user = Depends(getAdmin)):
-    enforceUnique(User, User.username, formData.username, session)
+async def create_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
+    enforce_unique(User, User.username, form_data.username, session)
 
-    if not formData.username or not formData.password:
+    if not form_data.username or not form_data.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username and password are required")
     
-    userModel = User(username=formData.username, 
-                     password=getPasswordHash(formData.password), 
+    userModel = User(username=form_data.username, 
+                     password=get_password_hash(form_data.password), 
                      role_id = 2,
                      llm_prefix="")
 
@@ -41,21 +42,21 @@ async def create_user(formData: Annotated[OAuth2PasswordRequestForm, Depends()],
     return userModel
 
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
-async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , currentUser = Depends(getAdmin)):
-    if currentUser.id == user_id:
+async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , current_user: Annotated[User,Depends(get_admin)]):
+    if current_user.id == user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="To edit your own user use the /me endpoint")
-    foundUser = enforceExisting(User, user_id, session)
+    foundUser = enforce_existing(User, user_id, session)
     
     if user.role_id != 1 and foundUser.role_id == 1:
-        protectAdminCount(session)
+        protect_admin_count(session)
     
-    enforceUnique(User,User.username,user.username,session, user_id)
+    enforce_unique(User,User.username,user.username,session, user_id)
     
-    role = enforceExisting(Role, user.role_id, session)
+    role = enforce_existing(Role, user.role_id, session)
     userData = user.model_dump(exclude_unset=True)
     if user.password:
-        userData["password"] = getPasswordHash(user.password)
+        userData["password"] = get_password_hash(user.password)
     foundUser.sqlmodel_update(userData)
 
     session.add(foundUser)
@@ -65,15 +66,15 @@ async def update_user(user_id: str, user: DTO.updateUserRequest, session: Sessio
     return foundUser
     
 @router.delete("/{user_id}", status_code=204)
-async def delete_user(user_id: int, session: SessionDep, currentUser = Depends(getAdmin)):
+async def delete_user(user_id: int, session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
     
-    if user_id == currentUser.id:
+    if user_id == current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="To delete your own user use the /me endpoint.")
     
-    user = enforceExisting(User, user_id, session)
+    user = enforce_existing(User, user_id, session)
     if user.role_id == 1:
-        protectAdminCount(session)
+        protect_admin_count(session)
 
     session.delete(user)
     session.commit()
