@@ -10,11 +10,11 @@ from scripts.configToObject import SettingsDep
 router = APIRouter(prefix="/me", tags=["me"])
 
 @router.get("", response_model= DTO.getMeResponse)
-def get_active_user(currentUser: Annotated[User, Depends(getCurrentUser)]):
+async def get_active_user(currentUser: Annotated[User, Depends(getCurrentUser)]):
     return currentUser
 
 @router.put("", response_model=DTO.updateMeResponse)
-def update_current_user(newUser: DTO.updateMeRequest, currentUser: Annotated[User, Depends(getCurrentUser)], session: SessionDep, settings: SettingsDep):
+async def update_current_user(newUser: DTO.updateMeRequest, currentUser: Annotated[User, Depends(getCurrentUser)], session: SessionDep, settings: SettingsDep):
     
     enforceExisting(Role, newUser.role_id, session)
 

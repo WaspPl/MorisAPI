@@ -10,19 +10,18 @@ from scripts.configToObject import SettingsDep
 router = APIRouter(prefix="/sprites",tags=["sprite"])
 
 @router.get("", response_model=list[DTO.getSpriteResponse])
-def get_sprites(session: SessionDep, limit = 10, offset = 0, currentUser = Depends(getAdmin)):
+async def get_sprites(session: SessionDep, limit = 10, offset = 0, currentUser = Depends(getAdmin)):
     result = session.exec(select(Sprite).limit(limit).offset(offset)).all()
     return result
 
 @router.get("/{sprite_id}",response_model=DTO.getSpriteDetailsResponse)
-def get_sprite_details(sprite_id: int, session: SessionDep, currentUser = Depends(getAdmin)):
+async def get_sprite_details(sprite_id: int, session: SessionDep, currentUser = Depends(getAdmin)):
     enforceExisting(Sprite, sprite_id, session)
     result = session.exec(select(Sprite).where(Sprite.id == sprite_id)).first()
     return result
 
 @router.post("", response_model=DTO.createSpriteResponse, status_code=status.HTTP_201_CREATED)
-
-def create_sprite(newSprite: DTO.createSpriteRequest, session: SessionDep, settings: SettingsDep, currentUser=Depends(getAdmin)):
+async def create_sprite(newSprite: DTO.createSpriteRequest, session: SessionDep, settings: SettingsDep, currentUser=Depends(getAdmin)):
     
     enforceUnique(Sprite, Sprite.name, newSprite.name, session)
 
@@ -35,7 +34,7 @@ def create_sprite(newSprite: DTO.createSpriteRequest, session: SessionDep, setti
     return newItem
 
 @router.put("/{sprite_id}", response_model=DTO.updateSpriteResponse)
-def update_sprite(sprite_id: int, newSprite: DTO.updateSpriteRequest, session: SessionDep, currentUser=Depends(getAdmin)):
+async def update_sprite(sprite_id: int, newSprite: DTO.updateSpriteRequest, session: SessionDep, currentUser=Depends(getAdmin)):
     oldItem = enforceExisting(Sprite, sprite_id, session)
     enforceUnique(Sprite, Sprite.name, newSprite.name, session, sprite_id)
 
@@ -52,7 +51,7 @@ def update_sprite(sprite_id: int, newSprite: DTO.updateSpriteRequest, session: S
     return updatedItem
 
 @router.delete("/{sprite_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_sprite(sprite_id: int, session: SessionDep, currentUser=Depends(getAdmin)):
+async def delete_sprite(sprite_id: int, session: SessionDep, currentUser=Depends(getAdmin)):
     item = enforceExisting(Sprite, sprite_id, session)
 
     session.delete(item)
