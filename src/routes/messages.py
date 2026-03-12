@@ -7,8 +7,8 @@ from models.databaseModels import Message, Command, Command_Role_Assignment, Use
 from sqlmodel import select, desc, asc, literal, func, delete
 from typing import Annotated
 from scripts.configToObject import SettingsDep
-from scripts.messageScripts import getLLMResponse, executeCommand, sendDataToDisplays, buildLLMQuery
-from asyncio import create_task, sleep
+from scripts.messageScripts import getLLMResponse, executeCommand, sendDataToDisplays, buildLLMQuery, getResponseFromImageMessage, getResponseFromTextMessage
+from asyncio import create_task
 from datetime import datetime, timezone
 from pathlib import Path
 import re
@@ -32,7 +32,9 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
                                     llm_prefix="",
                                     sprite_repeat_times=1,
                                     sprite= Sprite(content=""),
+                                    script_path="",
                                     is_output_llm=True)
+    
     if newMessage.type == "text":
         # get a command that satisfies requirements
         result = session.exec(select(Command, Prompt.text)
@@ -44,38 +46,25 @@ async def create_message(newMessage: DTO.createMessageRequest,session: SessionDe
         if result:
             command, prompt_pattern = result
             match = re.search(prompt_pattern, newMessage.content)
-        
             if match:
                 arguments = match.groupdict()
-
-
-        
         # get settings depending on if the command was found or not
         
         activeCommand = command if result else defaultCommand
+        textResponse = await getResponseFromTextMessage(newMessage.content, session, currentUser, settings, activeCommand, arguments)
 
-
-        content = await executeCommand(Path(command.script_path), arguments) if result else ""
-        sprite = activeCommand.sprite.content if activeCommand.sprite else ""
-        spriteRepeatTimes = activeCommand.sprite_repeat_times
-        llmOutput = activeCommand.is_output_llm
-
-        # if llmOutput is True send data to an llm
-        if llmOutput:
-            LLMQuery = buildLLMQuery(session, currentUser.id, settings.LLM.previous_messages_sent, newMessage.content, currentUser.llm_prefix)
-            textResponse = await getLLMResponse(LLMQuery, settings)
-        else: 
-            textResponse = content
     elif newMessage.type == "imgBase64":
         activeCommand = defaultCommand
-        enforce_base64_image(newMessage.content)
-        textResponse = "I got an image but don't have my code prepared for it yet"
+        textResponse = await getResponseFromImageMessage()
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Unsupported message type")
 
     if settings.display.enabled and newMessage.send_to_displays:
-        create_task(sendDataToDisplays())
+        create_task(sendDataToDisplays(settings=settings, 
+                                       text=textResponse, 
+                                       sprite_base64=activeCommand.sprite.content, 
+                                       sprite_repeat_times=activeCommand.sprite_repeat_times))
     
     userMessage = Message(user_id=currentUser.id,
                     is_users=True,

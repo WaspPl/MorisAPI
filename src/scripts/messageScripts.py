@@ -4,10 +4,11 @@ from fastapi import HTTPException, status
 import subprocess
 from scripts.database import SessionDep
 from sqlmodel import select, desc
-from models.databaseModels import Message
+from models.databaseModels import Message, Command, User
 from scripts.configToObject import SettingsDep
 import requests
 import json
+from scripts.dataValidations import enforce_base64_image
 
 
 async def executeCommand(script_path: Path, arguments) -> str:
@@ -58,8 +59,10 @@ async def getLLMResponse(messages: list[dict], settings: SettingsDep) -> str:
         "messages": messages,
         "verbosity": settings.LLM.verbosity
     }
-    
-    response = requests.post(url,headers=headers,json=data)
+    try: 
+        response = requests.post(url,headers=headers,json=data)
+    except:
+        return "There was an error connecting to the LLM."
     if response.status_code == 200:
         return response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     else:
@@ -78,3 +81,18 @@ async def sendDataToDisplays(settings: SettingsDep, text: str = "", sprite_base6
     
     requests.post(url, json=data)
     return
+
+async def getResponseFromTextMessage(newMessageText: str, session: SessionDep, currentUser: User, settings: SettingsDep, command: Command, command_arguments = None) -> str:
+    response = ""
+    if command and command.script_path:
+        response = await executeCommand(Path(command.script_path), command_arguments)
+    # if llmOutput is True send data to an llm
+    if command.is_output_llm:
+        LLMQuery = buildLLMQuery(session, currentUser.id, settings.LLM.previous_messages_sent, newMessageText, currentUser.llm_prefix)
+        response = await getLLMResponse(LLMQuery, settings)
+    
+    return response
+
+async def getResponseFromImageMessage(image_base64: str) -> str:
+    enforce_base64_image(image_base64)
+    return "I got an image but don't have my code prepared for it yet"
