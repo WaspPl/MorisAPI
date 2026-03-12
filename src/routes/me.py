@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from scripts.auth import getCurrentUser, getPasswordHash, createAccessToken
-from scripts.database import protectAdminCount, enforceUnique, enforceExisting, SessionDep
+from scripts.database import SessionDep
+from scripts.dataValidations import protectAdminCount, enforceUnique, enforceExisting
 from models.databaseModels import User, Role
 from typing import Annotated
 import models.DTOS.meDTOS as DTO

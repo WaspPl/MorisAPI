@@ -4,7 +4,8 @@ import models.DTOS.userDTOS as DTO
 from typing import Annotated
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from scripts.database import SessionDep, enforceExisting, enforceUnique, protectAdminCount
+from scripts.database import SessionDep
+from scripts.dataValidations import enforceExisting, enforceUnique, protectAdminCount
 from scripts.auth import getUser, getCurrentUser, getPasswordHash, getAdmin
 from sqlmodel import select, func
 

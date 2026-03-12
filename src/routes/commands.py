@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from scripts.auth import getCurrentUser, getAdmin
-from scripts.database import SessionDep, enforceExisting, enforceUnique
+from scripts.database import SessionDep
+from scripts.dataValidations import enforceExisting, enforceUnique
 from sqlmodel import select
 from models.databaseModels import Command, Command_Role_Assignment, Sprite
 import models.DTOS.commandDTOS as DTO

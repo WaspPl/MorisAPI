@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from scripts.auth import getCurrentUser
-from scripts.database import SessionDep, is_base64_image, enforce_base64_image
+from scripts.database import SessionDep
+from scripts.dataValidations import is_base64_image, enforce_base64_image
 import models.DTOS.messagesDTOS as DTO
 from models.databaseModels import Message, Command, Command_Role_Assignment, User, Prompt, Sprite
 from sqlmodel import select, desc, asc, literal, func, delete

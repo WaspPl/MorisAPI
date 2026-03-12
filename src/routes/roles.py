@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 import models.DTOS.roleDTOS as DTO
-from scripts.database import SessionDep, protectCoreRoles, enforceUnique, enforceExisting
+from scripts.database import SessionDep
+from scripts.dataValidations import protectCoreRoles, enforceUnique, enforceExisting
 from models.databaseModels import Role
 from sqlmodel import select
 from scripts.auth import getCurrentUser, getAdmin

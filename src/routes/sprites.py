@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from models.DTOS import spriteDTOS as DTO
 from models.databaseModels import Sprite
-from scripts.database import SessionDep, enforceExisting, enforceUnique, enforce_base64_image,  enforce_base64_image_size
+from scripts.database import SessionDep
+from scripts.dataValidations import enforceExisting, enforceUnique, enforce_base64_image,  enforce_base64_image_size
 from scripts.auth import getAdmin, getCurrentUser
 from sqlmodel import select
 from scripts.configToObject import SettingsDep
