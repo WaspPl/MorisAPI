@@ -11,9 +11,9 @@ router = APIRouter(prefix="/Role", tags=["Role"],)
 
 ## GET Role
 @router.get("", response_model=list[DTO.GetRoleResponse])
-async def get_Role(session: SessionDep, current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10):
-    Role = session.exec(select(Role).offset(offset).limit(limit)).all()
-    return Role
+async def get_roles(session: SessionDep, current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10):
+    roles = session.exec(select(Role).offset(offset).limit(limit)).all()
+    return roles
 
 ## GET ROLE BY ID
 @router.get("/{role_id}", response_model=DTO.GetRoleResponse)

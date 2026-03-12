@@ -15,12 +15,12 @@ class AssignedRoleMin(BaseModel):
 class SpriteMin(BaseModel):
     id: int
     name: str
+    content: str
 
 class getCommandResponse(BaseModel):
     id: int
     name: str
     description: str
-    sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
     llm_prefix: str | None
