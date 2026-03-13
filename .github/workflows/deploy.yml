@@ -13,8 +13,8 @@ jobs:
       - name: Connect to Tailscale
         uses: tailscale/github-action@v2
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          oauth_client_id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth_secret: ${{ secrets.TS_OAUTH_SECRET }}
 
 
       - name: Deploy via SSH
