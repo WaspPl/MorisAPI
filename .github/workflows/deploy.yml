@@ -26,5 +26,6 @@ jobs:
           script: |
             cd /home/wasppl/moris3/API
             git pull origin main
-            pip install requirements.txt
+            source .venv/bin/activate
+            pip install -runs requirements.txt
             sudo systemctl restart morisAPI

@@ -39,13 +39,13 @@ def get_session():
         yield session
 
 def populate_tables(session: Session):
-    from scripts.auth import getPasswordHash
+    from scripts.auth import get_password_hash
     if not session.exec(select(Role)).first():
         session.add(Role(id=1,name="admin"))
         session.add(Role(id=2,name="user"))
         session.commit()
     if not session.exec(select(User)).first():
-        session.add(User(id=1, username="admin", password=getPasswordHash(settings.auth.default_admin_password), role_id=1, llm_prefix=""))
+        session.add(User(id=1, username="admin", password=get_password_hash(settings.auth.default_admin_password), role_id=1, llm_prefix=""))
         session.commit()
 
 def create_db_and_tables():
