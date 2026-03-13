@@ -26,7 +26,7 @@ async def get_messages(session: SessionDep, current_user: Annotated[User, Depend
 
 @router.post("",response_model=DTO.createMessageResponse,  status_code=status.HTTP_201_CREATED)
 async def create_message(new_message: DTO.createMessageRequest,session: SessionDep,settings: SettingsDep, current_user: Annotated[User,Depends(get_current_user)]):
-
+    arguments = ""
     sentTime = datetime.now(timezone.utc).replace(microsecond=0)
     defaultCommand = Command(id = None,
                                     llm_prefix="",
