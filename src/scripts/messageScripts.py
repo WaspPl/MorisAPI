@@ -83,11 +83,13 @@ async def send_data_to_displays(settings: SettingsDep, text: str = None, sprite_
     
     if settings.display.use_uds:
         encoded_path = quote(url, safe='')
-        print(data)
-        
         uds_url = f"http+unix://{encoded_path}/display"
+        
         with requests_unixsocket.Session() as session:
-            response = session.post(uds_url, json=data)
+            headers = {'Content-Type': 'application/json'}
+            response = session.post(uds_url, json=data, headers=headers)
+            if response.status_code == 422:
+                print(f"DEBUG 422: {response.text}")
     else:
         response = requests.post(url, json=data)
     return
