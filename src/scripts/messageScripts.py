@@ -89,7 +89,7 @@ async def send_data_to_displays(settings: SettingsDep, text: str = None, sprite_
             headers = {'Content-Type': 'application/json'}
             response = session.post(uds_url, json=data, headers=headers)
             if response.status_code == 422:
-                print(f"DEBUG 422: {response.text}")
+                print(f"DEBUG 422: {response.text}", flush=True)
     else:
         response = requests.post(url, json=data)
     return
