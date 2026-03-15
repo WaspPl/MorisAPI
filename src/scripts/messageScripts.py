@@ -70,14 +70,14 @@ async def get_LLM_response(messages: list[dict], settings: SettingsDep) -> str:
     else:
         return f"Error: {response.status_code}, Details: {response._content}"
 
-async def send_data_to_displays(settings: SettingsDep, text: str = "", sprite_base64: str = "", sprite_repeat_times: int = 1) -> None:
+async def send_data_to_displays(settings: SettingsDep, text: str = None, sprite_base64: str = None, sprite_repeat_times: int = 1) -> None:
     # This function is made to work with MALDC, but can be changed without any major effect on the rest of the program
     
     url = settings.display.api_url
 
     data = {
-        "message": text,
-        "spriteBase64": sprite_base64,
+        "message": text or None,
+        "spriteBase64": sprite_base64 or None,
         "spriteReplayTimes": sprite_repeat_times
     }
     
