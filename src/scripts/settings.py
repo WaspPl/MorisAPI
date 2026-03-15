@@ -23,6 +23,7 @@ class StorageSettings(BaseModel):
 class DisplaySettings(BaseModel):
     enabled: bool = True
     api_url: str = "0.0.0.0:2020"
+    use_uds: bool = False
     sprite_height: int = 8
     sprite_width: int = 8
 

@@ -7,6 +7,7 @@ from sqlmodel import select, desc
 from models.databaseModels import Message, Command, User
 from scripts.settings import SettingsDep
 import requests
+import requests_unixsocket
 import json
 from scripts.dataValidations import enforce_base64_image
 
@@ -79,7 +80,11 @@ async def send_data_to_displays(settings: SettingsDep, text: str = "", sprite_ba
         "spriteReplayTimes": sprite_repeat_times
     }
     
-    requests.post(url, json=data)
+    if settings.display.use_uds:
+        with requests_unixsocket.Session() as session:
+            response = session.post(url, json=data)
+    else:
+        response = requests.post(url, json=data)
     return
 
 async def get_response_from_text_message(new_message_text: str, session: SessionDep, current_user: User, settings: SettingsDep, command: Command, command_arguments = None) -> str:
