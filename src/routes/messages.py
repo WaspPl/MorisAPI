@@ -64,7 +64,7 @@ async def create_message(new_message: DTO.createMessageRequest,session: SessionD
         create_task(send_data_to_displays(settings=settings, 
                                        text=textResponse, 
                                        sprite_base64=activeCommand.sprite.content if activeCommand.sprite else None, 
-                                       sprite_repeat_times=activeCommand.sprite_repeat_times if activeCommand.sprite else None))
+                                       sprite_repeat_times=activeCommand.sprite_repeat_times if activeCommand.sprite else 1))
     
     userMessage = Message(user_id=current_user.id,
                     is_users=True,
