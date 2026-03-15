@@ -84,7 +84,7 @@ async def send_data_to_displays(settings: SettingsDep, text: str = "", sprite_ba
     if settings.display.use_uds:
         encoded_path = quote(url, safe='')
         
-        uds_url = f"http+unix://{encoded_path}/"
+        uds_url = f"http+unix://{encoded_path}/display"
         with requests_unixsocket.Session() as session:
             response = session.post(uds_url, json=data)
     else:
