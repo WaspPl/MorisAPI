@@ -10,6 +10,7 @@ import requests
 import requests_unixsocket
 import json
 from scripts.dataValidations import enforce_base64_image
+from urllib.parse import quote
 
 
 async def execute_command(script_path: Path, arguments) -> str:
@@ -81,8 +82,11 @@ async def send_data_to_displays(settings: SettingsDep, text: str = "", sprite_ba
     }
     
     if settings.display.use_uds:
+        encoded_path = quote(url, safe='')
+        
+        uds_url = f"http+unix://{encoded_path}/"
         with requests_unixsocket.Session() as session:
-            response = session.post(url, json=data)
+            response = session.post(uds_url, json=data)
     else:
         response = requests.post(url, json=data)
     return
