@@ -79,7 +79,7 @@ def enforce_base64_image(base64_string: str):
         
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Content must be a valid Base64 encoded image (PNG)."
+                detail="Content must be a valid Base64 encoded image (PNG, JPEG)."
             )
         
 def enforce_base64_image_size(base64_string: str, height: int, width: int, is_witdth_factor: bool = True):
