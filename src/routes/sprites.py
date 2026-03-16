@@ -28,6 +28,7 @@ async def create_sprite(new_sprite: DTO.createSpriteRequest, session: SessionDep
 
     enforce_base64_image(new_sprite.content)
     enforce_base64_image_size(new_sprite.content, settings.display.sprite_height, settings.display.sprite_width, True)
+    new_sprite.content = new_sprite.content.split(",")[1] if "," in new_sprite.content else new_sprite.content
     newItem = Sprite.model_validate(new_sprite)
     session.add(newItem)
     session.commit()
@@ -41,7 +42,7 @@ async def update_sprite(sprite_id: int, new_sprite: DTO.updateSpriteRequest, ses
 
     
     enforce_base64_image(new_sprite.content)
-
+    new_sprite.content = new_sprite.content.split(",")[1] if "," in new_sprite.content else new_sprite.content
     itemDump = new_sprite.model_dump()
     updatedItem = oldItem.sqlmodel_update(itemDump)
     
