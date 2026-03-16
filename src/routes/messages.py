@@ -55,7 +55,7 @@ async def create_message(new_message: DTO.createMessageRequest,session: SessionD
 
     elif new_message.type == "imgBase64":
         activeCommand = defaultCommand
-        textResponse = await get_response_from_image_message()
+        textResponse = await get_response_from_image_message(new_message.content)
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Unsupported message type")
