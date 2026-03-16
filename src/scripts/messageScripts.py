@@ -12,7 +12,7 @@ import json
 from scripts.dataValidations import enforce_base64_image
 from urllib.parse import quote
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 async def execute_command(script_path: Path, arguments) -> str:
     if not script_path.exists():

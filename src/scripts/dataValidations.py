@@ -59,7 +59,6 @@ def is_base64_image(base64_string: str) -> bool:
     if "," in base64_string:
             base64_string = base64_string.split(",")[1]
     try:
-        print(base64_string)
         image_bytes = base64.b64decode(base64_string, validate=True)
         
         is_image = (
@@ -70,8 +69,7 @@ def is_base64_image(base64_string: str) -> bool:
         if not is_image:
             return False
         return True
-    except Exception as e:
-        logging.error(e)
+    except Exception:
         return False
 def enforce_base64_image(base64_string: str):
     
