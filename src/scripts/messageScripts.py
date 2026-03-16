@@ -1,4 +1,4 @@
-import asyncio
+import logging
 from pathlib import Path
 from fastapi import HTTPException, status
 import subprocess
@@ -73,7 +73,7 @@ async def get_LLM_response(messages: list[dict], settings: SettingsDep) -> str:
 async def send_data_to_displays(settings: SettingsDep, text: str = None, sprite_base64: str = None, sprite_repeat_times: int = 1) -> None:
     # This function is made to work with MALDC, but can be changed without any major effect on the rest of the program
     
-    url = settings.display.api_url
+
 
     data = {
         "message": text or None,
@@ -82,16 +82,16 @@ async def send_data_to_displays(settings: SettingsDep, text: str = None, sprite_
     }
     
     if settings.display.use_uds:
-        encoded_path = quote(url, safe='')
-        uds_url = f"http+unix://{encoded_path}/display"
+        encoded_path = quote(settings.display.uds_path, safe='')
+        uds_url = f"http+unix://{encoded_path}{settings.display.route}"
         
         with requests_unixsocket.Session() as session:
             headers = {'Content-Type': 'application/json'}
             response = session.post(uds_url, json=data, headers=headers)
-            if response.status_code == 422:
-                print(f"DEBUG 422: {response.text}", flush=True)
     else:
+        url = settings.display.api_url + settings.display.route
         response = requests.post(url, json=data)
+    logging.info(f"Sent data to displays: {data}, Response status code: {response.status_code}, Response content: {response.content}")
     return
 
 async def get_response_from_text_message(new_message_text: str, session: SessionDep, current_user: User, settings: SettingsDep, command: Command, command_arguments = None) -> str:

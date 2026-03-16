@@ -22,8 +22,10 @@ class StorageSettings(BaseModel):
 
 class DisplaySettings(BaseModel):
     enabled: bool = True
-    api_url: str = "0.0.0.0:2020"
     use_uds: bool = False
+    uds_path: str = "/tmp/morisMALDC.sock"
+    route: str = "/display"
+    api_url: str = "0.0.0.0:2020"
     sprite_height: int = 8
     sprite_width: int = 8
 

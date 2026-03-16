@@ -6,6 +6,7 @@ from sqlmodel import SQLModel, select, func
 from fastapi import HTTPException, status
 from scripts.database import SessionDep
 from models.databaseModels import User
+import logging
 
 T = TypeVar("T", bound=SQLModel)
 
@@ -67,11 +68,10 @@ def is_base64_image(base64_string: str) -> bool:
         )
         
         if not is_image:
-            raise ValueError("Not a valid image format")
-        print('image')
+            return False
         return True
     except Exception as e:
-        print(e)
+        logging.error(e)
         return False
 def enforce_base64_image(base64_string: str):
     
