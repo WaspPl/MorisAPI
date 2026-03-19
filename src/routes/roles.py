@@ -7,7 +7,7 @@ from sqlmodel import select
 from scripts.auth import get_current_user, get_admin
 from typing import Annotated
 
-router = APIRouter(prefix="/Role", tags=["Role"],)
+router = APIRouter(prefix="/roles", tags=["Role"],)
 
 ## GET Role
 @router.get("", response_model=list[DTO.GetRoleResponse])
