@@ -29,7 +29,9 @@ async def create_role_assignment(new_assignment: DTO.createAssignmentRequest,ses
 @router.delete("/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_assignPrompt(assignment_id: str,session: SessionDep, current_user:Annotated[User, Depends(get_admin)]):
     assignment = enforce_existing(Command_Role_Assignment, assignment_id, session)
-
+    if assignment.role_id == 1:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail = "You can't unassign the admin")
     session.delete(assignment)
     session.commit()
     return

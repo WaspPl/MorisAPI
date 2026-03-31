@@ -24,7 +24,7 @@ async def get_user(user_id: str,session: SessionDep, current_user: Annotated[Use
     return userItem
     
 @router.post("", response_model=DTO.createUserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
+async def create_user(form_data: DTO.createUserRequest, session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
     enforce_unique(User, User.username, form_data.username, session)
 
     if not form_data.username or not form_data.password:
@@ -42,7 +42,9 @@ async def create_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
     return userModel
 
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
-async def update_user(user_id: str, user: DTO.updateUserRequest, session: SessionDep , current_user: Annotated[User,Depends(get_admin)]):
+async def update_user(user_id: int, user: DTO.updateUserRequest, session: SessionDep , current_user: Annotated[User,Depends(get_admin)]):
+    print(user_id)
+    print(current_user.id)
     if current_user.id == user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="To edit your own user use the /me endpoint")

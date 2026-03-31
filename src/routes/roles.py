@@ -17,7 +17,7 @@ async def get_roles(session: SessionDep, current_user: Annotated[User,Depends(ge
 
 ## GET ROLE BY ID
 @router.get("/{role_id}", response_model=DTO.GetRoleResponse)
-async def get_role(session: SessionDep, role_id: int, current_user: Annotated[User,Depends(get_admin)]):
+async def get_role(session: SessionDep, role_id: int, current_user: Annotated[User,Depends(get_current_user)]):
     role = enforce_existing(Role, role_id, session)
     return role
 

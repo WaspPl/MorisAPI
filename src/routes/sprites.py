@@ -11,12 +11,12 @@ from typing import Annotated
 router = APIRouter(prefix="/sprites",tags=["sprite"])
 
 @router.get("", response_model=list[DTO.getSpriteResponse])
-async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(get_admin)], limit = 10, offset = 0):
+async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], limit = 10, offset = 0):
     result = session.exec(select(Sprite).limit(limit).offset(offset)).all()
     return result
 
 @router.get("/{sprite_id}",response_model=DTO.getSpriteDetailsResponse)
-async def get_sprite_details(sprite_id: int, session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
+async def get_sprite_details(sprite_id: int, session: SessionDep, current_user: Annotated[User,Depends(get_current_user)]):
     enforce_existing(Sprite, sprite_id, session)
     result = session.exec(select(Sprite).where(Sprite.id == sprite_id)).first()
     return result

@@ -82,8 +82,8 @@ def enforce_base64_image(base64_string: str):
         
 def enforce_base64_image_size(base64_string: str, height: int, width: int, is_witdth_factor: bool = True):
     if "," in base64_string:
-        b64_string = base64_string.split(",")[1]
-    imgData = base64.b64decode(b64_string)
+        base64_string = base64_string.split(",")[1]
+    imgData = base64.b64decode(base64_string)
     img = Image.open(BytesIO(imgData))
     imgWidth, imgHeight = img.size
 

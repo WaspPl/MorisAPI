@@ -15,12 +15,12 @@ class AssignedRoleMin(BaseModel):
 class SpriteMin(BaseModel):
     id: int
     name: str
-    content: str
 
 class getCommandResponse(BaseModel):
     id: int
     name: str
     description: str
+    sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
     llm_prefix: str | None
@@ -29,11 +29,12 @@ class getCommandDetailsResponse(BaseModel):
     id: int
     name: str
     description: str
+    sprite_id: int | None
     sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
     llm_prefix: str | None
-    prompts: list[PromptMin] 
+    prompts: list[PromptMin]
     assignments: list[AssignedRoleMin]
 
 class createCommandRequest(BaseModel):

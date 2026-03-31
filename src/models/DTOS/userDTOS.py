@@ -14,11 +14,15 @@ class getUserDetailsResponse(BaseModel):
     username: str
     role_id: int
     llm_prefix: str | None= None
+class createUserRequest(BaseModel):
+    username: str
+    password: str
+    role_id: int
+    llm_prefix: str | None = None
 class createUserResponse(BaseModel):
     id: int
     username: str
     role: RoleMin
-    llm_prefix: str | None = None
 class updateUserRequest(BaseModel):
     username: str
     password: str | None = None
@@ -29,4 +33,3 @@ class updateUserResponse(BaseModel):
     id: int
     username: str
     role: RoleMin
-    llm_prefix: str | None = None

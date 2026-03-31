@@ -6,8 +6,10 @@ class Role(SQLModel, table=True):
     name: str = Field(index=True, unique=True)
 
     users: list["User"] = Relationship(back_populates="role")
-    command_assignments: list["Command_Role_Assignment"] = Relationship(back_populates="role")
-    
+    command_assignments: list["Command_Role_Assignment"] = Relationship(
+        back_populates="role", 
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"} # Handled by SQLAlchemy
+    )
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     username: str = Field(index=True, unique=True)
