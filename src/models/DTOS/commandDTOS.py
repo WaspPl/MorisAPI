@@ -21,16 +21,14 @@ class getCommandResponse(BaseModel):
     name: str
     description: str
     sprite: SpriteMin | None
-    sprite_repeat_times: int
     is_output_llm: bool 
-    llm_prefix: str | None
     
 class getCommandDetailsResponse(BaseModel):
     id: int
     name: str
     description: str
     sprite_id: int | None
-    sprite: SpriteMin | None
+    # sprite: SpriteMin | None
     sprite_repeat_times: int
     is_output_llm: bool 
     llm_prefix: str | None

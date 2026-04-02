@@ -24,22 +24,18 @@ async def get_user(user_id: str,session: SessionDep, current_user: Annotated[Use
     return userItem
     
 @router.post("", response_model=DTO.createUserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(form_data: DTO.createUserRequest, session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
-    enforce_unique(User, User.username, form_data.username, session)
+async def create_user(new_user: DTO.createUserRequest, session: SessionDep, current_user: Annotated[User,Depends(get_admin)]):
+    enforce_unique(User, User.username, new_user.username, session)
 
-    if not form_data.username or not form_data.password:
+    if not new_user.username or not new_user.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username and password are required")
     
-    userModel = User(username=form_data.username, 
-                     password=get_password_hash(form_data.password), 
-                     role_id = 2,
-                     llm_prefix="")
 
-    session.add(userModel)
+    newItem = User.model_validate(new_user)
+    session.add(newItem)
     session.commit()
-    session.refresh(userModel,attribute_names=["role"])
-
-    return userModel
+    session.refresh(newItem,attribute_names=["role"])
+    return newItem    
 
 @router.put("/{user_id}", response_model=DTO.updateUserResponse)
 async def update_user(user_id: int, user: DTO.updateUserRequest, session: SessionDep , current_user: Annotated[User,Depends(get_admin)]):

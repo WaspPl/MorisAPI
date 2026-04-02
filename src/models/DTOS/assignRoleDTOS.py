@@ -10,6 +10,5 @@ class createAssignmentRequest(BaseModel):
 
 class createAssignmentResponse(BaseModel):
     id: int
-    command_id: int
     role: RoleMin
 

@@ -13,7 +13,7 @@ class getUserDetailsResponse(BaseModel):
     id: int
     username: str
     role_id: int
-    llm_prefix: str | None= None
+    llm_prefix: str | None = None
 class createUserRequest(BaseModel):
     username: str
     password: str
