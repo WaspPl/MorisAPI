@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from scripts.auth import get_current_user, get_admin
 from scripts.database import SessionDep
 from scripts.dataValidations import enforce_existing, enforce_unique
-from sqlmodel import select
+from sqlmodel import asc, desc, select
 from models.databaseModels import Command, Command_Role_Assignment, Sprite, User
 import models.DTOS.commandDTOS as DTO
 from fastapi import HTTPException, status, UploadFile, File
@@ -17,8 +17,8 @@ router = APIRouter(prefix="/commands", tags=["commands"])
 
 
 @router.get("", response_model=list[DTO.getCommandResponse])
-async def get_commands(session: SessionDep, current_user: Annotated[User, Depends(get_current_user)], limit: int = 100, offset: int = 0 ):
-    commands = session.exec(select(Command).join(Command_Role_Assignment).where(Command_Role_Assignment.role_id == current_user.role_id).limit(limit).offset(offset)).all()
+async def get_commands(session: SessionDep, current_user: Annotated[User, Depends(get_current_user)], limit: int = 100, offset: int = 0, descending: bool = True):
+    commands = session.exec(select(Command).join(Command_Role_Assignment).where(Command_Role_Assignment.role_id == current_user.role_id).limit(limit).offset(offset).order_by(desc(Command.id) if descending else asc(Command.id))).all()
     return commands
 
 @router.get("/{command_id}", response_model=DTO.getCommandDetailsResponse)

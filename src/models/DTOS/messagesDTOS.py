@@ -11,8 +11,8 @@ class getMessageResponse(BaseModel):
     content: str
     is_users: bool
     executed_command: CommandMin | None = None
-    time_sent: datetime
     type: str
+    time_created: datetime
 
 class createMessageRequest(BaseModel):
     content: str
@@ -22,3 +22,4 @@ class createMessageRequest(BaseModel):
 class createMessageResponse(BaseModel):
     user: getMessageResponse
     response: getMessageResponse
+    time_created: datetime

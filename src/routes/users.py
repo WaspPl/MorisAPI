@@ -7,15 +7,15 @@ from fastapi.security import OAuth2PasswordRequestForm
 from scripts.database import SessionDep
 from scripts.dataValidations import enforce_existing, enforce_unique, protect_admin_count
 from scripts.auth import get_current_user, get_password_hash, get_admin
-from sqlmodel import select, func
+from sqlmodel import asc, desc, select, func
 
 
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=list[DTO.getUserResponse])
-async def get_users(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10):
-    result = session.exec(select(User).offset(offset).limit(limit)).all()
+async def get_users(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10, descending=True):
+    result = session.exec(select(User).offset(offset).limit(limit).order_by(desc(User.id) if descending else asc(User.id) )).all()
     return result
 
 @router.get("/{user_id}", response_model=DTO.getUserDetailsResponse)
@@ -29,9 +29,16 @@ async def create_user(new_user: DTO.createUserRequest, session: SessionDep, curr
 
     if not new_user.username or not new_user.password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username and password are required")
-    
 
-    newItem = User.model_validate(new_user)
+    
+    role = enforce_existing(Role, new_user.role_id, session)
+    userData = new_user.model_dump(exclude_unset=True)
+    if new_user.password:
+        userData["password"] = get_password_hash(new_user.password)
+
+
+    newItem = User.model_validate(userData)
+
     session.add(newItem)
     session.commit()
     session.refresh(newItem,attribute_names=["role"])

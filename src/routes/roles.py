@@ -3,7 +3,7 @@ import models.DTOS.roleDTOS as DTO
 from scripts.database import SessionDep
 from scripts.dataValidations import protect_core_roles, enforce_unique, enforce_existing
 from models.databaseModels import Role, User
-from sqlmodel import select
+from sqlmodel import asc, desc, select
 from scripts.auth import get_current_user, get_admin
 from typing import Annotated
 
@@ -11,12 +11,12 @@ router = APIRouter(prefix="/roles", tags=["Role"],)
 
 ## GET Role
 @router.get("", response_model=list[DTO.GetRoleResponse])
-async def get_roles(session: SessionDep, current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10):
-    roles = session.exec(select(Role).offset(offset).limit(limit)).all()
+async def get_roles(session: SessionDep, current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10, descending: bool =True):
+    roles = session.exec(select(Role).offset(offset).limit(limit).order_by(desc(Role.id) if descending else asc(Role.id) )).all()
     return roles
 
 ## GET ROLE BY ID
-@router.get("/{role_id}", response_model=DTO.GetRoleResponse)
+@router.get("/{role_id}", response_model=DTO.GetRoleDetailsResponse)
 async def get_role(session: SessionDep, role_id: int, current_user: Annotated[User,Depends(get_current_user)]):
     role = enforce_existing(Role, role_id, session)
     return role

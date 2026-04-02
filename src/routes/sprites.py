@@ -1,24 +1,44 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from models.DTOS import spriteDTOS as DTO
-from models.databaseModels import Sprite, User
+from models.databaseModels import Command, Command_Role_Assignment, Sprite, User
 from scripts.database import SessionDep
 from scripts.dataValidations import enforce_existing, enforce_unique, enforce_base64_image,  enforce_base64_image_size
 from scripts.auth import get_admin, get_current_user
-from sqlmodel import select
+from sqlmodel import asc, desc, or_, select
 from scripts.settings import SettingsDep
 from typing import Annotated
 
 router = APIRouter(prefix="/sprites",tags=["sprite"])
 
 @router.get("", response_model=list[DTO.getSpriteResponse])
-async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], limit = 10, offset = 0):
-    result = session.exec(select(Sprite).limit(limit).offset(offset)).all()
+async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], limit = 10, offset = 0, descending=True):
+    result = session.exec(select(Sprite)
+        .join(Command, isouter=True) 
+        .join(Command_Role_Assignment, isouter=True)
+        .where(
+            or_(
+                Command_Role_Assignment.role_id == current_user.role_id,
+                Command.id == None 
+            )
+        )
+        .distinct()
+        .limit(limit)
+        .offset(offset)
+        .order_by(desc(Sprite.id) if descending else asc(Sprite.id))).all()
     return result
 
 @router.get("/{sprite_id}",response_model=DTO.getSpriteDetailsResponse)
 async def get_sprite_details(sprite_id: int, session: SessionDep, current_user: Annotated[User,Depends(get_current_user)]):
     enforce_existing(Sprite, sprite_id, session)
-    result = session.exec(select(Sprite).where(Sprite.id == sprite_id)).first()
+    result = session.exec(select(Sprite)
+        .join(Command, isouter=True) 
+        .join(Command_Role_Assignment, isouter=True)
+        .where(
+            or_(
+                Command_Role_Assignment.role_id == current_user.role_id,
+                Command.id == None
+            )
+        )).first()
     return result
 
 @router.post("", response_model=DTO.createSpriteResponse, status_code=status.HTTP_201_CREATED)

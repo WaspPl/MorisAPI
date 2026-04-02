@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends, status, HTTPException
 from scripts.auth import get_current_user, get_password_hash, create_access_token
 from scripts.database import SessionDep
@@ -18,10 +20,10 @@ async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annot
     
     enforce_existing(Role, new_user.role_id, session)
 
-    if new_user.role_id != current_user.role_id:
+    if new_user.role_id != current_user.role_id or new_user.token_duration_minutes != current_user.token_duration_minutes:
         if current_user.role_id != 1:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail="You don't have permission to change your own role.")
+                                detail="You don't have permission to change your own role or token duration.")
         else:
             protect_admin_count(session)
 
@@ -39,7 +41,9 @@ async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annot
     session.commit()
     session.refresh(current_user)
 
-    token = create_access_token(data={"sub":current_user.username})
+    tokenExpireDelta = timedelta(minutes=current_user.token_duration_minutes)
+
+    token = create_access_token(data={"sub":current_user.username}, expires_delta=tokenExpireDelta)
 
 
     response = {

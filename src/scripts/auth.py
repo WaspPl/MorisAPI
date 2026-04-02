@@ -90,8 +90,8 @@ def get_admin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep)
         return user
     
     raise HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Unauthorized",
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="You dont have permission to do that",
     headers={"WWW-Authenticate": "Bearer"},
     )
 

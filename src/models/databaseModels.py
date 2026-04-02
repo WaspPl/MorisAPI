@@ -1,20 +1,39 @@
 from sqlmodel import SQLModel, Field, Relationship, func
 from datetime import datetime
 
-class Role(SQLModel, table=True):
+class TimestampMixIn(SQLModel):
+    time_created: datetime | None = Field(
+        default=None,
+        sa_column_kwargs={"server_default": func.now()}
+    )
+    time_updated: datetime | None = Field(
+        default=None,
+        sa_column_kwargs={
+            "server_default": func.now(),
+            "onupdate": func.now(),
+        }
+    )
+
+
+class Role(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     name: str = Field(index=True, unique=True)
 
     users: list["User"] = Relationship(back_populates="role")
     command_assignments: list["Command_Role_Assignment"] = Relationship(
         back_populates="role", 
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"} # Handled by SQLAlchemy
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"} 
     )
-class User(SQLModel, table=True):
+
+
+
+class User(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     username: str = Field(index=True, unique=True)
     password: str
     llm_prefix: str = Field(default=None)
+
+    token_duration_minutes: int | None = Field(default=30)
 
     role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")
@@ -22,13 +41,13 @@ class User(SQLModel, table=True):
     messages: list["Message"] = Relationship(back_populates="user")
 
 
-class Sprite(SQLModel, table=True):
+class Sprite(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(index=True, default=None, primary_key=True)
     name: str | None = Field(unique=True)
     content: str
     commands: list["Command"] = Relationship(back_populates="sprite")
 
-class Command(SQLModel, table=True):
+class Command(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     name: str
     description: str
@@ -45,14 +64,14 @@ class Command(SQLModel, table=True):
     assignments: list["Command_Role_Assignment"] = Relationship(back_populates="command", cascade_delete=True)
     messages: list["Message"] = Relationship(back_populates='executed_command')
 
-class Prompt(SQLModel, table=True):
+class Prompt(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     text: str = Field(unique=True, index=True)
     
     command_id: int | None = Field(default=None, foreign_key="command.id", ondelete="CASCADE")
     command: Command | None = Relationship(back_populates="prompts")
-
-class Command_Role_Assignment(SQLModel, table=True):
+    
+class Command_Role_Assignment(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
     
     command_id: int | None = Field(index=True, default=None, foreign_key="command.id", ondelete="CASCADE") 
@@ -61,7 +80,8 @@ class Command_Role_Assignment(SQLModel, table=True):
     role_id: int | None = Field(default=None, foreign_key="role.id", ondelete="CASCADE")  
     role: Role | None = Relationship(back_populates="command_assignments")
 
-class Message(SQLModel, table= True):
+
+class Message(TimestampMixIn, SQLModel, table= True):
     id: int | None = Field(index=True, default=None, primary_key= True)
 
     user_id: int | None = Field(index= True, foreign_key='user.id', ondelete='CASCADE')
@@ -73,7 +93,3 @@ class Message(SQLModel, table= True):
 
     executed_command_id: int | None = Field(default=None, foreign_key='command.id')
     executed_command: Command | None = Relationship(back_populates='messages')
-
-    time_sent: datetime | None = Field(sa_column_kwargs={
-                                            "server_default": func.now() 
-                                        })
