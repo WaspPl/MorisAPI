@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field, Relationship, func
 from datetime import datetime
 
+
 class TimestampMixIn(SQLModel):
     time_created: datetime | None = Field(
         default=None,

@@ -14,7 +14,6 @@ from sqlmodel import select
 
 settings = load_settings()
 
-token_expire_minutes = settings.auth.token_expire_minutes
 secretKey = settings.auth.secret_key
 algorithm = settings.auth.algorithm
 
@@ -54,12 +53,11 @@ def authenticate_user(username: str, password: str, session: SessionDep):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: timedelta):
     dataToEncode = data.copy()
-    if expires_delta:
-        expire = datetime.now() + expires_delta
-    else:
-        expire = datetime.now() + timedelta(minutes = token_expire_minutes)
+
+    expire = datetime.now() + expires_delta
+
     dataToEncode.update({"exp":expire})
     encodedJWT = jwt.encode(dataToEncode, secretKey, algorithm=algorithm)
     return encodedJWT

@@ -23,7 +23,7 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], sess
     if not authenticatedUser:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Wrong login or password")
     
-    token_expire_minutes =  authenticatedUser.token_duration_minutes | settings.auth.token_expire_minutes
+    token_expire_minutes =  authenticatedUser.token_duration_minutes
     tokenExpireDelta = timedelta(minutes=token_expire_minutes)
 
     token = create_access_token(data={"sub":form_data.username}, expires_delta=tokenExpireDelta)

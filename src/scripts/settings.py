@@ -13,7 +13,6 @@ class ApiSettings(BaseModel):
 class AuthSettings(BaseModel):
     secret_key: str = "ChangeThisToYourSecretKey"
     algorithm: str = "HS256"
-    token_expire_minutes: int = 30
     default_admin_password: str = "admin"
 
 class StorageSettings(BaseModel):
