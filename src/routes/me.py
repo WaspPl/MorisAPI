@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, status, HTTPException
-from scripts.auth import get_current_user, get_password_hash, create_access_token
+from scripts.auth import create_refresh_token, get_current_user, get_password_hash, create_access_token
 from scripts.database import SessionDep
 from scripts.dataValidations import protect_admin_count, enforce_unique, enforce_existing
 from models.databaseModels import User, Role
@@ -20,12 +20,15 @@ async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annot
     
     enforce_existing(Role, new_user.role_id, session)
 
-    if new_user.role_id != current_user.role_id or new_user.token_duration_minutes != current_user.token_duration_minutes:
+    if (new_user.role_id != current_user.role_id):
         if current_user.role_id != 1:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail="You don't have permission to change your own role or token duration.")
+                                detail="You don't have permission to change your own role.")
         else:
             protect_admin_count(session)
+    if new_user.token_duration_minutes != current_user.token_duration_minutes and current_user.role_id != 1:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="You don't have permission to change token duration.")
 
     
 
@@ -41,15 +44,16 @@ async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annot
     session.commit()
     session.refresh(current_user)
 
-    tokenExpireDelta = timedelta(minutes=current_user.token_duration_minutes)
-
-    token = create_access_token(data={"sub":current_user.username}, expires_delta=tokenExpireDelta)
-
+    access_token = create_access_token(data={"sub":current_user.username}, expires_delta=timedelta(days = settings.auth.refresh_token_duration_days))
+    refresh_token = create_refresh_token(data={"sub":current_user.username}, expires_delta=timedelta(minutes= current_user.access_token_duration_minutes))
 
     response = {
         **current_user.model_dump(),
         'role' : current_user.role.__dict__,
-        'access_token' : token,
+        'access_token' : access_token,
+        'refresh_token': refresh_token,
+        'refresh_token_duration_days': current_user.access_token_duration_minutes,
+        'access_token_duration_minutes': current_user.access_token_duration_minutes,
         'token_type' : 'bearer'
 
     }

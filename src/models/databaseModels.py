@@ -15,6 +15,10 @@ class TimestampMixIn(SQLModel):
         }
     )
 
+class RefreshTokens(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True, index=True)
+    user_id: int = Field(index=True)
+    refresh_token: str = Field(index=True, unique=True)
 
 class Role(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
@@ -34,7 +38,7 @@ class User(TimestampMixIn, SQLModel, table=True):
     password: str
     llm_prefix: str = Field(default=None)
 
-    token_duration_minutes: int | None = Field(default=30)
+    access_token_duration_minutes: int | None = Field(default=30)
 
     role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")

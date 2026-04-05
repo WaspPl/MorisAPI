@@ -17,7 +17,7 @@ class getUserDetailsResponse(BaseModel):
     username: str
     role_id: int
     llm_prefix: str | None = None
-    token_duration_minutes: int
+    access_token_duration_minutes: int
     time_updated: datetime
     time_created: datetime
 
@@ -25,7 +25,7 @@ class createUserRequest(BaseModel):
     username: str
     password: str
     role_id: int
-    token_duration_minutes: int
+    access_token_duration_minutes: int
     llm_prefix: str | None = None
 class createUserResponse(BaseModel):
     id: int
@@ -38,7 +38,7 @@ class updateUserRequest(BaseModel):
     password: str | None = None
     role_id: int
     llm_prefix: str | None = None
-    token_duration_minutes: int
+    access_token_duration_minutes: int
     
 class updateUserResponse(BaseModel):
     id: int

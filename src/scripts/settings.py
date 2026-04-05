@@ -14,6 +14,7 @@ class AuthSettings(BaseModel):
     secret_key: str = "ChangeThisToYourSecretKey"
     algorithm: str = "HS256"
     default_admin_password: str = "admin"
+    refresh_token_duration_days: int = 30
 
 class StorageSettings(BaseModel):
     scripts_dir: Path = "storage/scripts"
