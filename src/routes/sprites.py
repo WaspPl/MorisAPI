@@ -11,7 +11,7 @@ from typing import Annotated
 router = APIRouter(prefix="/sprites",tags=["sprite"])
 
 @router.get("", response_model=list[DTO.getSpriteResponse])
-async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], limit = 10, offset = 0, descending=True):
+async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], limit = 10, offset = 0, descending=True, searchQuery: str = ''):
     result = session.exec(select(Sprite)
         .join(Command, isouter=True) 
         .join(Command_Role_Assignment, isouter=True)
@@ -21,6 +21,7 @@ async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(g
                 Command.id == None 
             )
         )
+        .where(Command.name.ilike(f"%{searchQuery}%"))
         .distinct()
         .limit(limit)
         .offset(offset)

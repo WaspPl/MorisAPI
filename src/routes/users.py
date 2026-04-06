@@ -14,8 +14,8 @@ from sqlmodel import asc, desc, select, func
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=list[DTO.getUserResponse])
-async def get_users(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10, descending=True):
-    result = session.exec(select(User).offset(offset).limit(limit).order_by(desc(User.id) if descending else asc(User.id) )).all()
+async def get_users(session: SessionDep,current_user: Annotated[User,Depends(get_current_user)], offset: int = 0, limit: int = 10, descending=True,searchQuery: str = ''):
+    result = session.exec(select(User).where(User.username.ilike(f"%{searchQuery}%")).offset(offset).limit(limit).order_by(desc(User.id) if descending else asc(User.id) )).all()
     return result
 
 @router.get("/{user_id}", response_model=DTO.getUserDetailsResponse)
