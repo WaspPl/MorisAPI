@@ -26,7 +26,7 @@ async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annot
                                 detail="You don't have permission to change your own role.")
         else:
             protect_admin_count(session)
-    if new_user.token_duration_minutes != current_user.token_duration_minutes and current_user.role_id != 1:
+    if new_user.access_token_duration_minutes != current_user.access_token_duration_minutes and current_user.role_id != 1:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail="You don't have permission to change token duration.")
 
@@ -45,20 +45,23 @@ async def update_current_user(new_user: DTO.updateMeRequest, current_user: Annot
     session.refresh(current_user)
 
     access_token = create_access_token(data={"sub":current_user.username}, expires_delta=timedelta(days = settings.auth.refresh_token_duration_days))
-    refresh_token = create_refresh_token(data={"sub":current_user.username}, expires_delta=timedelta(minutes= current_user.access_token_duration_minutes))
+    refresh_token = create_refresh_token(data={"sub":current_user.username}, expires_delta=timedelta(minutes= current_user.access_token_duration_minutes), session=session, user_id=current_user.id)
 
-    response = {
-        **current_user.model_dump(),
-        'role' : current_user.role.__dict__,
-        'access_token' : access_token,
-        'refresh_token': refresh_token,
-        'refresh_token_duration_days': current_user.access_token_duration_minutes,
-        'access_token_duration_minutes': current_user.access_token_duration_minutes,
-        'token_type' : 'bearer'
+    response_data = {
+    "id": current_user.id,
+    "username": current_user.username,
+    "role_id": current_user.role_id,
+    "llm_prefix": current_user.llm_prefix,
+    "time_created": current_user.time_created,
+    "time_updated": current_user.time_updated,
+    "access_token": access_token,
+    "refresh_token": refresh_token,
+    "refresh_token_duration_days": settings.auth.refresh_token_duration_days, # Use the actual duration
+    "access_token_duration_minutes": current_user.access_token_duration_minutes,
+    "token_type": "bearer"
+}
 
-    }
-
-    return DTO.updateMeResponse.model_validate(response)
+    return DTO.updateMeResponse.model_validate(response_data)
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(current_user: Annotated[User, Depends(get_current_user)], session: SessionDep):

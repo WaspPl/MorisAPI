@@ -7,7 +7,7 @@ class TimestampMixIn(SQLModel):
         default=None,
         sa_column_kwargs={"server_default": func.now()}
     )
-    time_updated: datetime | None = Field(
+    time_updated : datetime | None = Field(
         default=None,
         sa_column_kwargs={
             "server_default": func.now(),
@@ -22,7 +22,7 @@ class RefreshTokens(SQLModel, table=True):
 
 class Role(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
-    name: str = Field(index=True, unique=True)
+    name: str = Field(index=True, unique=True, nullable=False, min_length=1)
 
     users: list["User"] = Relationship(back_populates="role")
     command_assignments: list["Command_Role_Assignment"] = Relationship(
@@ -34,11 +34,11 @@ class Role(TimestampMixIn, SQLModel, table=True):
 
 class User(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
-    username: str = Field(index=True, unique=True)
-    password: str
-    llm_prefix: str = Field(default=None)
+    username: str = Field(index=True, unique=True, nullable=False, min_length=1)
+    password: str = Field(nullable=False, min_length=1)
+    llm_prefix: str | None = Field(default=None)
 
-    access_token_duration_minutes: int | None = Field(default=30)
+    access_token_duration_minutes: int | None = Field(default=30, gt=1)
 
     role_id: int | None = Field(default=2, foreign_key="role.id")
     role: Role | None = Relationship(back_populates="users")
@@ -48,16 +48,16 @@ class User(TimestampMixIn, SQLModel, table=True):
 
 class Sprite(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(index=True, default=None, primary_key=True)
-    name: str | None = Field(unique=True)
-    content: str
+    name: str = Field(default= None, unique=True, nullable=False, min_length=1)
+    content: str = Field(nullable=False, min_length=1)
     commands: list["Command"] = Relationship(back_populates="sprite")
 
 class Command(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
-    name: str
-    description: str
-    sprite_repeat_times: int | None = Field(default=1)
-    is_output_llm: bool | None = Field(default=False)
+    name: str = Field(nullable=False, min_length=1)
+    description: str = Field(nullable=False, min_length=1)
+    sprite_repeat_times: int | None = Field(default=1,)
+    is_output_llm: bool | None = Field(default=False, nullable=False)
     llm_prefix: str | None = Field(default="")
 
     script_path: str| None = Field(default=None)
@@ -71,7 +71,7 @@ class Command(TimestampMixIn, SQLModel, table=True):
 
 class Prompt(TimestampMixIn, SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True, index=True)
-    text: str = Field(unique=True, index=True)
+    text: str = Field(default = None, unique=True, index=True, nullable=True, min_length=1)
     
     command_id: int | None = Field(default=None, foreign_key="command.id", ondelete="CASCADE")
     command: Command | None = Relationship(back_populates="prompts")
@@ -89,12 +89,12 @@ class Command_Role_Assignment(TimestampMixIn, SQLModel, table=True):
 class Message(TimestampMixIn, SQLModel, table= True):
     id: int | None = Field(index=True, default=None, primary_key= True)
 
-    user_id: int | None = Field(index= True, foreign_key='user.id', ondelete='CASCADE')
+    user_id: int | None = Field(index= True, foreign_key='user.id', ondelete='CASCADE', gt=1)
     user: User | None = Relationship(back_populates="messages")
 
-    is_users: bool
-    content: str
-    type: str
+    is_users: bool = Field(default=True, nullable=False)
+    content: str = Field(nullable=False, min_length=1)
+    type: str = Field(nullable=False, min_length=1)
 
     executed_command_id: int | None = Field(default=None, foreign_key='command.id')
     executed_command: Command | None = Relationship(back_populates='messages')

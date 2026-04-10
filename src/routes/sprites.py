@@ -21,7 +21,7 @@ async def get_sprites(session: SessionDep,current_user: Annotated[User,Depends(g
                 Command.id == None 
             )
         )
-        .where(Command.name.ilike(f"%{searchQuery}%"))
+        .where(Sprite.name.ilike(f"%{searchQuery}%"))
         .distinct()
         .limit(limit)
         .offset(offset)
@@ -39,7 +39,8 @@ async def get_sprite_details(sprite_id: int, session: SessionDep, current_user: 
                 Command_Role_Assignment.role_id == current_user.role_id,
                 Command.id == None
             )
-        )).first()
+        )
+        .where(Sprite.id == sprite_id)).first()
     return result
 
 @router.post("", response_model=DTO.createSpriteResponse, status_code=status.HTTP_201_CREATED)
