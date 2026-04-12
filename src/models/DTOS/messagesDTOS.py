@@ -22,4 +22,3 @@ class createMessageRequest(BaseModel):
 class createMessageResponse(BaseModel):
     user: getMessageResponse
     response: getMessageResponse
-    time_created: datetime
