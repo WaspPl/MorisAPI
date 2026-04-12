@@ -21,7 +21,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PI_IP }}
-          username: wasppl # or your username
+          username: wasppl
           key: ${{ secrets.PI_SSH_KEY }}
           script: |
             cd /home/wasppl/moris3/API
