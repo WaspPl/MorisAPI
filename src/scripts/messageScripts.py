@@ -44,7 +44,7 @@ def build_LLM_query(session: SessionDep, user_id: int, previous_messages_count: 
     previousMessages = session.exec(select(Message)
                                     .where(Message.user_id == user_id)
                                     .limit(previous_messages_count)
-                                    .order_by(desc(Message.time_sent))).all()
+                                    .order_by(desc(Message.time_created))).all()
 
     systemQuery = {'role': 'system', 'content': user_prefix}
     messagesQuery = [{'role': 'user' if message.is_users else 'assistant', 'content': message.content} for message in previousMessages.__reversed__()]
