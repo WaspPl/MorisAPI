@@ -99,12 +99,12 @@ def get_admin(token: Annotated[str, Depends(oauth2_scheme)],session: SessionDep)
 def create_refresh_token(data: dict, expires_delta: timedelta, session: SessionDep, user_id: int):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + expires_delta
-    to_encode.update({"exp": expire, "type": "refresh", "randomUUID": str(uuid.uuid4)})
+    to_encode.update({"exp": expire, "type": "refresh", "randomUUID": str(uuid.uuid4())})
     encoded_jwt = jwt.encode(to_encode, secretKey, algorithm=algorithm)
     
     db_token = RefreshTokens(
         user_id=user_id, 
-        refresh_token=passwordHash.hash(encoded_jwt)
+        refresh_token=encoded_jwt
     )
     session.add(db_token)
     session.commit()
@@ -128,14 +128,9 @@ def validate_refresh_token(refresh_token: str, session: SessionDep):
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    db_tokens = session.exec(select(RefreshTokens).where(RefreshTokens.user_id == user.id)).all()
+    valid_db_entry = session.exec(select(RefreshTokens).where(RefreshTokens.refresh_token == refresh_token)).first()
     
-    valid_db_entry = None
-    for entry in db_tokens:
-        if passwordHash.verify(refresh_token, entry.refresh_token):
-            valid_db_entry = entry
-            break
-            
+
     if not valid_db_entry:
         raise HTTPException(status_code=401, detail="Refresh token revoked or invalid")
 
