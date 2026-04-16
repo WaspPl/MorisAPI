@@ -21,7 +21,7 @@ async def get_messages(session: SessionDep, current_user: Annotated[User, Depend
                             .where(Message.user_id == current_user.id)
                             .limit(limit)
                             .offset(offset)
-                            .order_by(desc(Message.time_sent))).all()
+                            .order_by(desc(Message.id))).all()
     return response
 
 @router.post("",response_model=DTO.createMessageResponse,  status_code=status.HTTP_201_CREATED)
