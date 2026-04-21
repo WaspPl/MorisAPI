@@ -16,13 +16,26 @@ This project uses FastAPI's automatic documentation. Once the server is running,
 
 * **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
 ### Quick Start
-#### 1. Clone & Install
+#### 1. Clone
 ```bash
-git clone [https://github.com/WaspPl/MorisAPI.git](https://github.com/WaspPl/MorisAPI.git)
+git clone https://github.com/WaspPl/MorisAPI.git
 cd MorisAPI
+python -m venv .venv
+```
+#### 2. Activate the environment
+linux/mac
+```bash
+source .venv/bin/activate 
+```
+windows
+```bash
+.\.venv\Scripts\Activate.ps1
+```
+#### 3. Install the requirements
+```bash
 pip install -r requirements.txt
 ```
-#### 2. Run the API
+#### 4. Run the API
 ```bash
 python src/main.py
 ```
@@ -100,11 +113,11 @@ what's the weather in (?P<city>.+)
 ```
 Sending a message saying 
 ```
-what's the weather in Gdańsk
+what's the weather in Tczew
 ```
  returns 
  ```
- The temperature in Gdańsk is 20 degrees.
+ The temperature in Tczew is 20 degrees.
  ```
  If no prompt matches the message it get's passed to an LLM.
 ## Display support
